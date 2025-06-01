@@ -1,0 +1,8 @@
+idme:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    user-secret-key: k9ReYc2Xh+T9n8q4r7p1o6u3j8i5a7d3f9g2h6j3k5l7m9n1p2q4r6s8t9v0y2w4z6
+    # 设置jwt过期时间
+    user-ttl: 7200000
+    # 设置前端传递过来的令牌名称
+    user-token-name: token
