@@ -1,5 +1,6 @@
 package com.idme.interceptor;
 
+import com.idme.constant.JwtClaimsConstant;
 import com.idme.properties.JwtProperties;
 import com.idme.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -46,7 +47,7 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
         //2、校验令牌
         try {
             Claims claims = JwtUtil.parseJWT(jwtProperties.getUserSecretKey(), token);
-            Long empId = Long.valueOf(claims.get("empId").toString());
+            Long empId = Long.valueOf(claims.get(JwtClaimsConstant.EMP_ID).toString());
             //3、通过，放行
             return true;
         } catch (Exception ex) {

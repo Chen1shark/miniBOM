@@ -6,6 +6,7 @@ import com.huawei.innovation.rdm.coresdk.basic.vo.RDMPageVO;
 import com.huawei.innovation.rdm.minibom.delegator.UserDelegator;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserCreateDTO;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserViewDTO;
+import com.idme.constant.MessageConstant;
 import com.idme.exception.AccountNotFoundException;
 import com.idme.exception.DuplicateUsernameException;
 import com.idme.exception.PasswordEditFailedException;
@@ -35,13 +36,13 @@ public class UserServiceImpl implements UserService {
         RDMPageVO rdmPageVO=new RDMPageVO();
         List<UserViewDTO> list= userDelegator.find(queryRequestVo,rdmPageVO);
         if(list.isEmpty()){
-            throw new AccountNotFoundException("用户不存在");
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }else {
             userViewDTO.setPsw(DigestUtils.md5DigestAsHex(userViewDTO.getPsw().getBytes()));
             if(Objects.equals(list.get(0).getPsw(), userViewDTO.getPsw())){
                 return list.get(0);
             }else
-                throw new PasswordEditFailedException("密码错误");
+                throw new PasswordEditFailedException(MessageConstant.PASSWORD_ERROR);
 
         }
 
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
         RDMPageVO rdmPageVO=new RDMPageVO();
         List<UserViewDTO> list= userDelegator.find(queryRequestVo,rdmPageVO);
         if(list != null) {
-            throw new DuplicateUsernameException("用户名重复");
+            throw new DuplicateUsernameException(MessageConstant.USERNAME_DUPLICATE);
         }
         userCreateDTO.setPsw(DigestUtils.md5DigestAsHex(userCreateDTO.getPsw().getBytes()));
         userDelegator.create(userCreateDTO);

@@ -1,12 +1,11 @@
-package com.idme.Controller;
+package com.idme.controller;
 
 
 
-import com.huawei.innovation.rdm.minibom.bean.entity.User;
-import com.huawei.innovation.rdm.minibom.delegator.UserDelegator;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserCreateDTO;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserViewDTO;
 
+import com.idme.constant.JwtClaimsConstant;
 import com.idme.pojo.dto.UserLoginDto;
 import com.idme.properties.JwtProperties;
 import com.idme.result.Result;
@@ -49,7 +48,7 @@ public class UserController {
 
         //登录成功后，生成jwt令牌
         Map<String, Object> claims = new HashMap<>();
-        claims.put("empId", userViewDTO1.getId());
+        claims.put(JwtClaimsConstant.EMP_ID, userViewDTO1.getId());
         String token = JwtUtil.createJWT(
                 jwtProperties.getUserSecretKey(),
                 jwtProperties.getUserTtl(),
