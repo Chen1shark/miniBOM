@@ -35,14 +35,14 @@ public class UserServiceImpl implements UserService {
         queryRequestVo.addCondition("name",ConditionType.EQUAL,userViewDTO.getName());
         RDMPageVO rdmPageVO=new RDMPageVO();
         List<UserViewDTO> list= userDelegator.find(queryRequestVo,rdmPageVO);
-        if(list.isEmpty()){
-            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        if(list == null){
+            throw new AccountNotFoundException(MessageConstant.LOGIN_CREDENTIAL_ERROR);
         }else {
             userViewDTO.setPsw(DigestUtils.md5DigestAsHex(userViewDTO.getPsw().getBytes()));
             if(Objects.equals(list.get(0).getPsw(), userViewDTO.getPsw())){
                 return list.get(0);
             }else
-                throw new PasswordEditFailedException(MessageConstant.PASSWORD_ERROR);
+                throw new PasswordEditFailedException(MessageConstant.LOGIN_CREDENTIAL_ERROR);
 
         }
 
