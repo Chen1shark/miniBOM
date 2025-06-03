@@ -7,10 +7,10 @@ import com.huawei.innovation.rdm.minibom.delegator.UserDelegator;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserCreateDTO;
 import com.huawei.innovation.rdm.minibom.dto.entity.UserViewDTO;
 import com.idme.constant.MessageConstant;
-import com.idme.exception.AccountNotFoundException;
-import com.idme.exception.DuplicateUsernameException;
-import com.idme.exception.PasswordEditFailedException;
+import com.idme.constant.UserConstant;
+import com.idme.exception.*;
 import com.idme.service.UserService;
+import com.idme.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
      */
     public UserViewDTO login(UserViewDTO userViewDTO) {
         QueryRequestVo queryRequestVo=new QueryRequestVo();
-        queryRequestVo.addCondition("name",ConditionType.EQUAL,userViewDTO.getName());
+        queryRequestVo.addCondition(UserConstant.NAME,ConditionType.EQUAL,userViewDTO.getName());
         RDMPageVO rdmPageVO=new RDMPageVO();
         List<UserViewDTO> list= userDelegator.find(queryRequestVo,rdmPageVO);
         if(list == null){
@@ -53,9 +53,15 @@ public class UserServiceImpl implements UserService {
      * @param userCreateDTO
      */
     public void register(UserCreateDTO userCreateDTO) {
+        if(!ValidationUtils.isValidUsername(userCreateDTO.getName())){
+            throw new UsernameFormatException(MessageConstant.USERNAME_FORMAT_ERROR);
+        }
+        if(!ValidationUtils.isValidPassword(userCreateDTO.getPsw())){
+            throw new PasswordFormatException(MessageConstant.PASSWORD_FORMAT_ERROR);
+        }
 
         QueryRequestVo queryRequestVo=new QueryRequestVo();
-        queryRequestVo.addCondition("name",ConditionType.EQUAL,userCreateDTO.getName());
+        queryRequestVo.addCondition(UserConstant.NAME,ConditionType.EQUAL,userCreateDTO.getName());
         RDMPageVO rdmPageVO=new RDMPageVO();
         List<UserViewDTO> list= userDelegator.find(queryRequestVo,rdmPageVO);
         if(list != null) {
