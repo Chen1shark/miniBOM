@@ -2,10 +2,10 @@
     <div class="login-container">
       <h2>账号登录</h2>
       <div class="form-group">
-        <input v-model="username" type="text" placeholder="请输入用户名" />
+        <input v-model="loginForm.name" type="text" placeholder="请输入用户名" />
       </div>
       <div class="form-group">
-        <input v-model="password" type="password" placeholder="请输入密码" />
+        <input v-model="loginForm.psw" type="password" placeholder="请输入密码" />
       </div>
       <div class="error-msg" v-if="errorMsg">{{ errorMsg }}</div>
       <button @click="login">登录</button>
@@ -13,16 +13,20 @@
   </template>
   
   <script setup>
-  import { ref } from 'vue'
-  import axios from '@/utils/request'
-  import request from '@/utils/request'
+  import { ref, reactive } from 'vue'
+  // import axios from '@/utils/request'
+  // import request from '@/utils/request'
   import { useRouter } from 'vue-router'
+  import { apiLogin } from '@/api/userLogin'
 
   const router = useRouter()
   
-  const username = ref('testuser2')
-  const password = ref('Test456$%^')
   const errorMsg = ref('')
+  
+  const loginForm = reactive({
+    name: '',
+    psw: ''
+  })
   
   // 校验函数
   function isValidUsername(name) {
@@ -40,29 +44,33 @@
   
   const login = async () => {
     errorMsg.value = ''
-    if (!isValidUsername(username.value)) {
+    if (!isValidUsername(loginForm.name)) {
       errorMsg.value = '用户名需为6~32位的字母/数字组合'
       return
     }
-    if (!isValidPassword(password.value)) {
+    if (!isValidPassword(loginForm.psw)) {
       errorMsg.value = '密码需为8~32位，并包含字母、数字和特殊字符'
       return
     }
-  
-    const res = await request.post('/auth/login', {
-    username: username.value,
-    password: password.value
-    })
 
-    console.log('登录响应内容：', res)
+    try {
+      const res = await apiLogin(loginForm)
+      console.log('登录响应：', res)
 
-
-    if (res.data.code === 200) {
-    localStorage.setItem('token', res.data.token)
-    alert('登录成功')
-    router.push('/Attr')
-    } else {
-      alert(res.data.message || '登录失败')
+      if (res.code === 1) {  // 成功状态码为1
+        const userData = res.data
+        localStorage.setItem('token', userData.token)
+        localStorage.setItem('userId', userData.id)
+        localStorage.setItem('userName', userData.name)
+        
+        alert('登录成功')
+        router.push('/Attr')
+      } else {
+        errorMsg.value = res.msg || '登录失败'
+      }
+    } catch (error) {
+      console.error('登录出错：', error)
+      errorMsg.value = '登录失败，请稍后重试'
     }
   }
   </script>

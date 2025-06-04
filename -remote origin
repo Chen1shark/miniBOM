@@ -1,0 +1,74 @@
+[33mcommit 547e18e86f7a3b76d8acae4f4331c8c38da3e865[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Merge: 7a91a96 bb19f2e
+Author: Urara-wq <2152984243@qq.com>
+Date:   Tue Jun 3 11:16:11 2025 +0800
+
+    Merge branch 'main' of https://github.com/Chen1shark/miniBOM
+
+[33mcommit 7a91a96f42ea6f2985caff92c8427e588009f801[m
+Merge: f1bd065 8b2993a
+Author: Urara-wq <2152984243@qq.com>
+Date:   Tue Jun 3 11:11:51 2025 +0800
+
+    提交前端代码
+
+[33mcommit bb19f2ec71f6bb6e7ae23a3e43b64020ec370e21[m[33m ([m[1;31morigin/main[m[33m)[m
+Author: Chen1shark <1943086187@qq.com>
+Date:   Tue Jun 3 11:10:10 2025 +0800
+
+    账号密码异常处理
+
+[33mcommit f1bd0653e88ec4a2842583f0d3fd51130c3768d4[m
+Author: Urara-wq <2152984243@qq.com>
+Date:   Tue Jun 3 11:04:01 2025 +0800
+
+    上传前端代码到 front_end 文件夹
+
+[33mcommit 71297754ae24205e199c0f1bae8eb5f9ef8743d3[m
+Author: Urara-wq <2152984243@qq.com>
+Date:   Tue Jun 3 10:58:41 2025 +0800
+
+    第一次提交代码
+
+[33mcommit 8b2993aadbb9fe5465acb7a51c265eb30c51cd0c[m
+Author: Chen1shark <1943086187@qq.com>
+Date:   Tue Jun 3 10:54:16 2025 +0800
+
+    异常处理
+
+[33mcommit 13d690cd56c95caa1dfe4ea126c99773c1732e26[m
+Merge: 937dded 93fdfbc
+Author: Chen1shark <1943086187@qq.com>
+Date:   Tue Jun 3 10:32:59 2025 +0800
+
+    Merge branch 'main' of github.com:Chen1shark/miniBOM
+
+[33mcommit 937dded636b137809e530ad1b12c1fcb923df20e[m
+Author: Chen1shark <1943086187@qq.com>
+Date:   Tue Jun 3 10:31:15 2025 +0800
+
+    增加常量类
+
+[33mcommit 93fdfbc02e1e28bc5e51eec56b6d9e5712ed4f4c[m
+Author: cirimnd <1324448697@qq.com>
+Date:   Tue Jun 3 10:08:56 2025 +0800
+
+    测试提交（cirimnd）
+
+[33mcommit 8b4f2d52a3965d7a99b682b7785785cda5553675[m
+Author: Chen1shark <1943086187@qq.com>
+Date:   Sun Jun 1 12:44:31 2025 +0800
+
+    no message
+
+[33mcommit 8967bbed9797b90023ba7f0599fec444b0250d96[m
+Author: Chen1shark <1943086187@qq.com>
+Date:   Sun Jun 1 12:33:25 2025 +0800
+
+    初次提交
+
+[33mcommit bd00fa4ada15b3c8eed611f59a019ee59d1e9527[m
+Author: Chen1shark <167622894+Chen1shark@users.noreply.github.com>
+Date:   Sun Jun 1 01:01:55 2025 +0800
+
+    Initial commit
