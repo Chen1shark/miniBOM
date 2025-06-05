@@ -1,4 +1,5 @@
 <template>
+ <div class="login-page">
     <div class="login-container">
       <h2>账号登录</h2>
       <div class="form-group">
@@ -10,6 +11,7 @@
       <div class="error-msg" v-if="errorMsg">{{ errorMsg }}</div>
       <button @click="login">登录</button>
     </div>
+  </div>
   </template>
   
   <script setup>
@@ -64,7 +66,7 @@
         localStorage.setItem('userName', userData.name)
         
         alert('登录成功')
-        router.push('/Attr')
+        router.push('/Home')
       } else {
         errorMsg.value = res.msg || '登录失败'
       }
@@ -76,6 +78,16 @@
   </script>
   
   <style scoped>
+  .login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw; /* ✅ 关键，强制宽度全屏 */
+  flex: 1;      /* 也可以加 flex:1 */
+  background-color: #f5f5f5;
+  }
+
   .login-container {
     width: 300px;
     margin: 100px auto;
@@ -83,6 +95,8 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     text-align: center;
+
+    
   }
   .form-group {
     margin-bottom: 15px;
