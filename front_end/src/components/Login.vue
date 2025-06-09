@@ -1,5 +1,21 @@
 <template>
- <div class="login-page">
+
+          
+
+  <div class="layout">
+    <header class="header">
+      <div class="title-container">
+      <h1 class="title-cn">miniBOM系统</h1>
+      <h2 class="title-en">miniBOM System</h2>
+      </div>
+    </header>
+    <div class="content">
+      <aside class="aside">
+        <img src="F:\miniBOMF\miniBOM\front_end\src\loginP.png" class="p1">
+      </aside>
+      <main class="main">
+
+        <div class="login-page">
     <div class="login-container">
       <h2>账号登录</h2>
       <div class="form-group">
@@ -12,6 +28,14 @@
       <button @click="login">登录</button>
     </div>
   </div>
+
+
+      </main>
+    </div>
+  </div>
+
+
+
   </template>
   
   <script setup>
@@ -78,14 +102,95 @@
   </script>
   
   <style scoped>
+    .layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 1696px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  border-radius: 10px; 
+  background-color: #FFFFFF;
+}
+
+/* 顶部 Header */
+.header {
+  height: 150px;
+  display: flex;
+  background-color: #99CCFF;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  padding-left: 20px;
+}
+
+.title-cn {
+  font-size: 32px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  margin-bottom: 8px;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.title-en {
+  font-size: 20px;
+  font-weight: 500;
+  color: #34495e;
+  margin: 0;
+  font-family: 'Arial', 'Helvetica Neue', sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* 主体区域：左右结构 */
+.content {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px); /* 减去 header 高度 */
+}
+
+/* 左侧 Aside */
+.aside {
+  width: 40%;
+  padding: 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* 右侧 Main 区域 */
+.main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.p1 {
+  width: 99%;
+  height: 99%;
+  object-fit: contain; /* 或 contain */}
+
   .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  width: 100vw; /* ✅ 关键，强制宽度全屏 */
+  height: 100%;
   flex: 1;      /* 也可以加 flex:1 */
-  background-color: #f5f5f5;
+  background-color: #FFFFFF;
   }
 
   .login-container {
