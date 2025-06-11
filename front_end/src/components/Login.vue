@@ -11,7 +11,7 @@
     </header>
     <div class="content">
       <aside class="aside">
-        <img src="F:\miniBOMF\miniBOM\front_end\src\loginP.png" class="p1">
+        <img src="..\src\loginP.png" class="p1">
       </aside>
       <main class="main">
 

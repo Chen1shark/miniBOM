@@ -13,5 +13,5 @@ public class MessageConstant {
 
     public static final String PASSWORD_FORMAT_ERROR = "密码格式错误";
 
-
+    public static final String ATTRIBUTE_NOT_FOUND = "属性未找到";
 }
