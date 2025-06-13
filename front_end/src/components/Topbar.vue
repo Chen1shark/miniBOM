@@ -29,11 +29,21 @@ function logout() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 40px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
   z-index: 10;
+  box-sizing: border-box;
+}
+
+.left {
+  flex: 1;
+}
+
+.right {
+  margin-left: 20px;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -51,6 +61,8 @@ function logout() {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.3s;
+  white-space: nowrap;
+  min-width: 80px;
 }
 
 .logout-button:hover {

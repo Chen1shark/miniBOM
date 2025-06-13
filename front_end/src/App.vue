@@ -1,5 +1,7 @@
 <script setup>
-
+   import BasicDis from '@/pages/PartBom/BasicDis.vue'
+   import Home from './components/Home.vue';
+ 
 </script>
 
 <template>

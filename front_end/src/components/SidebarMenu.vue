@@ -19,14 +19,8 @@
     </div>
 
     <div class="menu-group">
-      <h3>Part & BOM管理</h3>
-      <button @click="$router.push('/part/create')">📌 创建部件</button>
-      <button @click="$router.push('/part/edit')">✏️ 修改部件</button>
-      <button @click="$router.push('/part/delete')">🗑️ 删除部件版本</button>
-      <button @click="$router.push('/part/query')">🔍 查询部件</button>
-      <button @click="$router.push('/part/version')">📖 查询小版本</button>
-      <button @click="$router.push('/bom/parent-child')">🔗 父子项管理</button>
-      <button @click="$router.push('/bom/attribute')">📋 BOM属性管理</button>
+      <button @click="$router.push('/Home/part/basicShow')">Part & BOM管理</button>
+      <!--修改6.12，仅设置一个跳转，剩余跳转在界面中实现-->
     </div>
   </div>
 </template>

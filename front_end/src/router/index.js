@@ -4,10 +4,24 @@ import Home from '@/components/Home.vue'
 import AttrHome from '@/pages/Attribute/AttrHome.vue'
 import CategoryDetail from '@/pages/Attribute/CategoryDetail.vue'
 import CateHome from '@/pages/Category/CateHome.vue'
+import BasicDis from '@/pages/PartBom/BasicDis.vue'
 
 const routes = [
   { path: '/', component: Login },
-  { path: '/Home', component: Home },
+
+
+
+  // { path: '/Home', component: Home },
+  { 
+    path: '/Home',
+    component: Home,
+    children: [
+      {
+        path: 'part/basicShow',
+        component: BasicDis
+      }
+    ]
+  },
   { path: '/attribute/create', component: AttrHome },
   { path: '/attribute/edit', component: AttrHome },
   { path: '/attribute/delete', component: AttrHome },
@@ -17,13 +31,7 @@ const routes = [
   { path: '/category/generate', component: AttrHome },
   { path: '/category/query-one', component: AttrHome },
   { path: '/category/query-all', component: CateHome },
-  { path: '/category/detail/:id', component: CategoryDetail },
-  { path: '/part/create', component: () => import('@/pages/PartBom/PartBomHome.vue') },
-  { path: '/part/edit', component: () => import('@/pages/PartBom/PartBomHome.vue') },
-  { path: '/part/query', component: () => import('@/pages/PartBom/PartBomHome.vue') },
-  { path: '/part/version', component: () => import('@/pages/PartBom/PartBomHome.vue') },
-  { path: '/part/parent-child', component: () => import('@/pages/PartBom/PartBomHome.vue') },
-  { path: '/part/attribute', component: () => import('@/pages/PartBom/PartBomHome.vue') },
+  { path: '/category/detail/:id', component: CategoryDetail }
 ]
 
 const router = createRouter({

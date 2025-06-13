@@ -7,7 +7,7 @@
       <SidebarMenu />
       <div class="main-content">
         <div class="content-box">
-          <h1>欢迎使用 miniBOM 系统</h1>
+          <h1 v-if="!$route.matched.length">欢迎使用 miniBOM 系统</h1>
           <router-view />
         </div>
       </div>
@@ -26,10 +26,11 @@ import Topbar from '../components/Topbar.vue'
 .layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  width: 97vw;
+  height: 100vh;
+  width: 100vw;
   background: linear-gradient(to bottom right, #f0f0f0, #d9e7f4);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden; /* 防止出现滚动条 */
 }
 
 /* 顶部栏 */
@@ -38,12 +39,14 @@ import Topbar from '../components/Topbar.vue'
   background-color: #ffffff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   z-index: 10;
+  flex-shrink: 0; /* 防止顶部栏被压缩 */
 }
 
 /* 主体横向布局：左侧栏 + 内容区 */
 .body {
   display: flex;
   flex: 1;
+  overflow: hidden; /* 防止出现滚动条 */
 }
 
 /* 修改 SidebarMenu 为组件选择器 */
@@ -66,22 +69,24 @@ SidebarMenu {
   justify-content: center;
   align-items: center;
   padding: 0;
-  overflow-y: auto;
+  overflow: hidden; /* 防止出现滚动条 */
 }
 
 /* 内容盒子居中展示 */
 .content-box {
-  width: 100vw;
+  width: 100%;
   height: 100%;
-  padding: 60px 40px;
+  padding: 20px;
   box-sizing: border-box;
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   text-align: center;
+  overflow: auto; /* 内容过多时允许滚动 */
 }
 
 /* 标题样式 */
@@ -90,7 +95,7 @@ h1 {
   font-size: 2.5rem;
   font-weight: 600;
   color: #333333;
-  margin-bottom: 40px;
+  margin: 20px 0;
   letter-spacing: 1px;
 }
 
