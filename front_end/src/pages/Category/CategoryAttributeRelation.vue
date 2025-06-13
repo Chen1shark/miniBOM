@@ -155,5 +155,36 @@ const isAttributeRelatedToCategory = (attribute, category) => {
 <style scoped>
 .category-attribute-relation {
   padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-attribute-relation h3 {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
+  border-left: 4px solid #409eff;
+  padding-left: 8px;
+}
+
+.el-table {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.el-table__body-wrapper {
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
+}
+
+/* 确保表格内容可以水平滚动 */
+.el-table__body-wrapper {
+  overflow-x: auto;
+}
+
+/* 固定左侧列 */
+.el-table .el-table__fixed {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 </style> 

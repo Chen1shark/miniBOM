@@ -117,6 +117,36 @@ const handleNodeClick = (data) => {
 <style scoped>
 .category-tree-view {
   padding: 20px;
-  border-right: 1px solid #eee; /* 添加分隔线 */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.category-tree-view h3 {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #333;
+  border-left: 4px solid #409eff;
+  padding-left: 8px;
+}
+
+.el-tree {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* 自定义树节点样式 */
+.el-tree-node__content {
+  height: 32px;
+}
+
+.el-tree-node__content:hover {
+  background-color: #f5f7fa;
+}
+
+/* 选中节点样式 */
+.el-tree-node.is-current > .el-tree-node__content {
+  background-color: #ecf5ff;
+  color: #409eff;
 }
 </style> 

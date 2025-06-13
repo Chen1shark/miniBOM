@@ -3,24 +3,23 @@
     <div class="menu-group">
       <h3>属性管理</h3>
       
-      <button @click="$router.push('/attribute/create')">📌 创建属性</button>
-      <button @click="$router.push('/attribute/edit')">✏️ 修改属性</button>
-      <button @click="$router.push('/attribute/delete')">🗑️ 删除属性</button>
-      <button @click="$router.push('/attribute/query')">🔍 查询属性</button>
+      <button @click="$router.push('/Home/attribute/create')">📌 创建属性</button>
+      <button @click="$router.push('/Home/attribute/edit')">✏️ 修改属性</button>
+      <button @click="$router.push('/Home/attribute/delete')">🗑️ 删除属性</button>
+      <button @click="$router.push('/Home/attribute/query')">🔍 查询属性</button>
     </div>
 
     <div class="menu-group">
       <h3>分类管理</h3>
-      <button @click="$router.push('/category/create')">📌 创建分类模板</button>
-      <button @click="$router.push('/category/edit')">✏️ 修改分类模板</button>
-      <button @click="$router.push('/category/generate')">📎 作成分类模板</button>
-      <button @click="$router.push('/category/query-one')">🔍 查询单个分类</button>
-      <button @click="$router.push('/category/query-all')">📚 查询所有分类</button>
+      <button @click="$router.push('/Home/category/create')">📌 创建分类模板</button>
+      <button @click="$router.push('/Home/category/edit')">✏️ 修改分类模板</button>
+      <button @click="$router.push('/Home/category/generate')">📎 作成分类模板</button>
+      <button @click="$router.push('/Home/category/query-one')">🔍 查询单个分类</button>
+      <button @click="$router.push('/Home/category/query-all')">📚 查询所有分类</button>
     </div>
 
     <div class="menu-group">
       <button @click="$router.push('/Home/part/basicShow')">Part & BOM管理</button>
-      <!--修改6.12，仅设置一个跳转，剩余跳转在界面中实现-->
     </div>
   </div>
 </template>

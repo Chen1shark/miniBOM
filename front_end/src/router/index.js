@@ -19,19 +19,57 @@ const routes = [
       {
         path: 'part/basicShow',
         component: BasicDis
+      },
+      {
+        path: 'attribute/create',
+        component: AttrHome,
+        props: { defaultType: 'attribute' }
+      },
+      {
+        path: 'attribute/edit',
+        component: AttrHome,
+        props: { defaultType: 'attribute' }
+      },
+      {
+        path: 'attribute/delete',
+        component: AttrHome,
+        props: { defaultType: 'attribute' }
+      },
+      {
+        path: 'attribute/query',
+        component: AttrHome,
+        props: { defaultType: 'attribute' }
+      },
+      {
+        path: 'category/create',
+        component: AttrHome,
+        props: { defaultType: 'category' }
+      },
+      {
+        path: 'category/edit',
+        component: AttrHome,
+        props: { defaultType: 'category' }
+      },
+      {
+        path: 'category/generate',
+        component: AttrHome,
+        props: { defaultType: 'category' }
+      },
+      {
+        path: 'category/query-one',
+        component: AttrHome,
+        props: { defaultType: 'category' }
+      },
+      {
+        path: 'category/query-all',
+        component: CateHome
+      },
+      {
+        path: 'category/detail/:id',
+        component: CategoryDetail
       }
     ]
-  },
-  { path: '/attribute/create', component: AttrHome },
-  { path: '/attribute/edit', component: AttrHome },
-  { path: '/attribute/delete', component: AttrHome },
-  { path: '/attribute/query', component: AttrHome },
-  { path: '/category/create', component: AttrHome },
-  { path: '/category/edit', component: AttrHome },
-  { path: '/category/generate', component: AttrHome },
-  { path: '/category/query-one', component: AttrHome },
-  { path: '/category/query-all', component: CateHome },
-  { path: '/category/detail/:id', component: CategoryDetail }
+  }
 ]
 
 const router = createRouter({

@@ -254,34 +254,58 @@ onMounted(() => {
 <style scoped>
 .category-query-all-container {
   padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .query-card {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .query-header {
   margin-bottom: 20px;
-  display: flex; /* 使用 flex 布局 */
-  align-items: center; /* 垂直居中 */
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
 }
 
 .content-area {
   display: flex;
+  flex: 1;
+  min-height: 0; /* 重要：允许内容区域收缩 */
+  gap: 20px;
 }
 
 .tree-view-container {
-  width: 300px; /* 树状图区域固定宽度 */
-  margin-right: 20px;
-  flex-shrink: 0; /* 防止树状图区域缩小 */
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
 }
 
 .relation-table-container {
-  flex-grow: 1; /* 属性关系表格区域填充剩余空间 */
+  flex: 1;
+  min-width: 0; /* 重要：允许表格容器收缩 */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .relation-table-container.full-width {
-    flex-grow: 1; /* 或者设置 width: 100%; */
+  width: 100%;
 }
 
 /* 可以添加更多样式 */

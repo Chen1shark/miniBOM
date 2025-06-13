@@ -70,46 +70,36 @@
   
   const login = async () => {
    
-    // errorMsg.value = ''
-    // if (!isValidUsername(loginForm.name)) {
-    //   errorMsg.value = '用户名需为6~32位的字母/数字组合'
-    //   return
-    // }
-    // if (!isValidPassword(loginForm.psw)) {
-    //   errorMsg.value = '密码需为8~32位，并包含字母、数字和特殊字符'
-    //   return
-    // }
+    errorMsg.value = ''
+    if (!isValidUsername(loginForm.name)) {
+      errorMsg.value = '用户名需为6~32位的字母/数字组合'
+      return
+    }
+    if (!isValidPassword(loginForm.psw)) {
+      errorMsg.value = '密码需为8~32位，并包含字母、数字和特殊字符'
+      return
+    }
 
-    // try {
-    //   const res = await apiLogin(loginForm)
-    //   console.log('登录响应：', res)
+    try {
+      const res = await apiLogin(loginForm)
+      console.log('登录响应：', res)
 
-    //   if (res.code === 1) {  // 成功状态码为1
-    //     const userData = res.data
-    //     localStorage.setItem('token', userData.token)
-    //     localStorage.setItem('userId', userData.id)
-    //     localStorage.setItem('userName', userData.name)
+      if (res.code === 1) {  // 成功状态码为1
+        const userData = res.data
+        localStorage.setItem('token', userData.token)
+        localStorage.setItem('userId', userData.id)
+        localStorage.setItem('userName', userData.name)
         
-    //     alert('登录成功')
-    //     router.push('/Home')
-    //   } else {
-    //     errorMsg.value = res.msg || '登录失败'
-    //   }
-    // } catch (error) {
-    //   console.error('登录出错：', error)
-    //   errorMsg.value = '登录失败，请稍后重试'
-    // }
+        alert('登录成功')
+        router.push('/Home')
+      } else {
+        errorMsg.value = res.msg || '登录失败'
+      }
+    } catch (error) {
+      console.error('登录出错：', error)
+      errorMsg.value = '登录失败，请稍后重试'
+    }
 
-
-
-
-
-    localStorage.setItem('token', 'temp_token')
-    localStorage.setItem('userId', '1')
-    localStorage.setItem('userName', 'temp_user')
-    
-    alert('登录成功')
-    router.push('/Home')
   }
   </script>
   
