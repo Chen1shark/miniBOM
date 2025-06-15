@@ -6,6 +6,7 @@ import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -174,6 +175,86 @@ public class HttpClientUtil {
             }
         } catch (Exception e) {
             throw new HttpClientException("POST-JSON请求失败: " + url, e);
+        }
+    }
+
+
+    /**
+     * 执行DELETE请求
+     * @param url 请求地址
+     * @param params 查询参数（可选）
+     * @param headers 自定义请求头（可选）
+     * @return 封装后的响应对象
+     */
+    public static HttpResponse doDelete(String url,
+                                        Map<String, String> params,
+                                        Map<String, String> headers) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            // 构建带参数的URI
+            URI uri = buildUriWithParams(url, params);
+            HttpDelete httpDelete = new HttpDelete(uri);
+            httpDelete.setConfig(buildRequestConfig());
+
+            // 添加自定义头
+            if (headers != null) {
+                headers.forEach(httpDelete::setHeader);
+            }
+
+            try (CloseableHttpResponse response = httpClient.execute(httpDelete)) {
+                return parseResponse(response);
+            }
+        } catch (Exception e) {
+            throw new HttpClientException("DELETE请求失败: " + url, e);
+        }
+    }
+
+    /**
+     * 执行DELETE请求（JSON格式）
+     * @param url 请求地址
+     * @param jsonBody JSON请求体
+     * @param headers 自定义请求头（可选）
+     * @return 封装后的响应对象
+     */
+    public static HttpResponse doDeleteWithJsonBody(String url,
+                                                    Object jsonBody,
+                                                    Map<String, String> headers) {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpDeleteWithBody httpDelete = new HttpDeleteWithBody(url);
+            httpDelete.setConfig(buildRequestConfig());
+
+            // 设置默认头
+            httpDelete.setHeader("Content-Type", "application/json");
+            httpDelete.setHeader("Accept", "application/json");
+
+            // 添加自定义头
+            if (headers != null) {
+                headers.forEach(httpDelete::setHeader);
+            }
+
+            if (jsonBody != null) {
+                String jsonStr = JSON.toJSONString(jsonBody,
+                        SerializerFeature.WriteMapNullValue,
+                        SerializerFeature.PrettyFormat);
+                httpDelete.setEntity(new StringEntity(jsonStr, StandardCharsets.UTF_8));
+            }
+
+            try (CloseableHttpResponse response = httpClient.execute(httpDelete)) {
+                return parseResponse(response);
+            }
+        } catch (Exception e) {
+            throw new HttpClientException("DELETE-JSON请求失败: " + url, e);
+        }
+    }
+
+    // 支持请求体的HttpDelete实现
+    private static class HttpDeleteWithBody extends HttpPost {
+        public HttpDeleteWithBody(String url) {
+            super(url);
+        }
+
+        @Override
+        public String getMethod() {
+            return "DELETE";
         }
     }
 
