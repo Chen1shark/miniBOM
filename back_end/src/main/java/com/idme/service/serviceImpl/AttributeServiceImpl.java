@@ -1,26 +1,30 @@
 package com.idme.service.serviceImpl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdsModifierDTO;
 import com.huawei.innovation.rdm.coresdk.basic.enums.ConditionType;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestVo;
 import com.huawei.innovation.rdm.coresdk.basic.vo.RDMPageVO;
 import com.huawei.innovation.rdm.xdm.delegator.EXADefinitionDelegator;
-import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionCreateDTO;
-import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionQueryViewDTO;
-import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionUpdateDTO;
-import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionViewDTO;
+import com.huawei.innovation.rdm.xdm.dto.entity.*;
 import com.idme.constant.AttributeConstant;
+import com.idme.constant.CategoryConstant;
 import com.idme.constant.MessageConstant;
+import com.idme.context.BaseContext;
 import com.idme.exception.AttributeNotFoundException;
+import com.idme.exception.CategoryNotFoundException;
+import com.idme.pojo.vo.CategorySimpleVO;
 import com.idme.service.AttributeService;
+import com.idme.utils.HttpClientUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class AttributeServiceImpl implements AttributeService {
@@ -114,9 +118,75 @@ public class AttributeServiceImpl implements AttributeService {
         return exaDefinitionViewDTO;
     }
 
-    @Override
-    public void category(Long id, Integer pageSize, Integer curPage) {
-        //TODO:实现根据属性查找分类
+    /**
+     * 根据属性id查分类
+     * @param id
+     * @return
+     */
+    public List<CategorySimpleVO> category(Long id) {
+        String url = "https://dme.cn-north-4.huaweicloud.com/rdm_b49541bdd3de4658aab470544248649c_app/publicservices/rdm/basic/api/EXADefinition/queryExtendedAttributeRefered";
+
+        // 构建请求体
+        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        requestBody.put("params", params);
+
+        //构建请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-Auth-Token", BaseContext.getCurrentToken());
+
+        try {
+            HttpClientUtil.HttpResponse response = HttpClientUtil.doPost4JsonWithHeaders(url, requestBody, headers);
+
+
+            // 解析完整响应结构
+            Map<String, Object> responseMap = JSON.parseObject(response.getBody(),
+                    new TypeReference<Map<String, Object>>() {});
+
+            // 获取data数组
+            List<Map<String, Object>> dataList = (List<Map<String, Object>>) responseMap.get("data");
+
+
+            Map<String, Object> firstData = dataList.get(0);
+
+            List<Map<String, Object>> categoryNodes = (List<Map<String, Object>>) firstData.get("categorynodeInfo");
+
+            // 转换为CategorySimpleVO列表
+            List<CategorySimpleVO> categoryList = categoryNodes.stream().map(node -> {
+                CategorySimpleVO vo = new CategorySimpleVO();
+                vo.setId(Long.parseLong(node.get(CategoryConstant.ID).toString()));
+                vo.setBusinessCode(node.get(CategoryConstant.BUSINESS_CODE).toString());
+                vo.setName(node.get(CategoryConstant.NAME).toString());
+                vo.setNameEn(node.get(CategoryConstant.NAME_EN).toString());
+                vo.setDescription(Objects.toString(node.get(CategoryConstant.DESCRIPTION), null));
+                vo.setDescriptionEn(Objects.toString(node.get(CategoryConstant.DESCRIPTION_EN), null));
+                return vo;
+            }).collect(Collectors.toList());
+
+
+            return categoryList;
+        }catch(RuntimeException ex){
+            throw new CategoryNotFoundException(MessageConstant.CATEGORY_NOT_FOUND);
+        }
+
+    }
+
+    /**
+     * 属性总数
+     * @param searchText
+     * @return
+     */
+    public long count(String searchText) {
+        QueryRequestVo queryRequestVo = new QueryRequestVo();
+
+        if (StringUtils.hasText(searchText)) {
+            queryRequestVo.addCondition(AttributeConstant.NAME, ConditionType.LIKE, searchText);
+        }
+
+        long count = exaDefinitionDelegator.count(queryRequestVo);
+
+        return count;
     }
 
 

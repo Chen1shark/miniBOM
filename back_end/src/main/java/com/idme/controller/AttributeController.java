@@ -4,6 +4,7 @@ import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdsModifierDTO;
 import com.huawei.innovation.rdm.xdm.dto.entity.*;
 import com.idme.pojo.dto.AttributeUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
+import com.idme.pojo.vo.CategorySimpleVO;
 import com.idme.pojo.vo.CategoryVO;
 import com.idme.pojo.vo.TotalAttributeVO;
 import com.idme.result.Result;
@@ -47,10 +48,13 @@ public class AttributeController {
                     return vo;
                 })
                 .collect(Collectors.toList());
+
+        long count = attributeService.count(searchText);
+
         //记录总数
         TotalAttributeVO totalAttributeVO = TotalAttributeVO.builder()
                 .list(voList)
-                .number(list.size())
+                .number(count)
                 .build();
         return Result.success(totalAttributeVO);
     }
@@ -111,12 +115,16 @@ public class AttributeController {
     }
 
 
-    @GetMapping("/category/{id}/{pageSize}/{curPage}")
-    public Result<CategoryVO> category(@PathVariable Long id,@PathVariable Integer pageSize, @PathVariable Integer curPage){
-        // TODO:实现根据属性查找分类功能
-        attributeService.category(id,pageSize,curPage);
+    /**
+     * 根据属性id查分类
+     * @param id
+     * @return
+     */
+    @GetMapping("/category/{id}")
+    public Result<List<CategorySimpleVO>> category(@PathVariable Long id){
 
-        return null;
+        return Result.success(attributeService.category(id));
+
     }
 
 }

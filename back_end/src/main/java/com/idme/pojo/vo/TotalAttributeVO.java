@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TotalAttributeVO {
     //属性个数
-    private int number;
+    private long number;
 
     //属性展示
     private List<AttributeVO> list;

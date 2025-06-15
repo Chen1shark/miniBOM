@@ -17,5 +17,7 @@ public class MessageConstant {
 
     public static final String ATTRIBUTE_UPDATE_FAILED = "属性修改失败";
 
+    public static final String CATEGORY_NOT_FOUND = "分类未找到";
+
 
 }

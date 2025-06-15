@@ -1,5 +1,6 @@
 package com.idme.handler;
 
+import com.idme.context.BaseContext;
 import com.idme.exception.BaseException;
 import com.idme.result.Result;
 import lombok.extern.slf4j.Slf4j;

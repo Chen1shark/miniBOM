@@ -4,6 +4,7 @@ import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdsModifierDTO;
 import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionCreateDTO;
 import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionUpdateDTO;
 import com.huawei.innovation.rdm.xdm.dto.entity.EXADefinitionViewDTO;
+import com.idme.pojo.vo.CategorySimpleVO;
 
 
 import java.util.List;
@@ -41,5 +42,17 @@ public interface AttributeService {
      */
     EXADefinitionViewDTO create(EXADefinitionCreateDTO exaDefinitionCreateDTO);
 
-    void category(Long id, Integer pageSize, Integer curPage);
+    /**
+     * 根据属性id查找分类
+     * @param id
+     * @return
+     */
+    List<CategorySimpleVO> category(Long id);
+
+    /**
+     * 属性总数
+     * @param searchText
+     * @return
+     */
+    long count(String searchText);
 }
