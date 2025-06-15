@@ -39,16 +39,6 @@ public interface CategoryService {
      */
     void deleteCategory(Long categoryId);
 
-    /**
-     * 按分类查询属性
-     * @param queryDto
-     * @return
-     */
-    JSONObject getAttributes(CategoryQueryDto queryDto);
-
-    JSONObject batchDeleteExaDefinitionLinks(List<String> ids);
-
     List<EXADefinitionLinkViewDTO> batchCreateLinks(AttributeVO attributeVO);
 
-    PageResult getAttributes1(CategoryQueryDto queryDto);
 }

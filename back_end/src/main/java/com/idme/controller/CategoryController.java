@@ -121,37 +121,7 @@ public class CategoryController {
         return Result.success();
     }
 
-    /**
-     * 按分类查询属性
-     *
-     * @return 分页结果
-     */
-    @GetMapping("/getAttributes")
-    public JSONObject getAttributes(CategoryQueryDto queryDto) {
 
-        return categoryService.getAttributes(queryDto);
-
-    }
-
-    /**
-     * 按分类查询属性
-     * @return 分页结果
-     */
-    /**
-     * 批量删除EXADefinitionLink记录
-     *
-     * @param deleteRequest 包含要删除的ID列表
-     * @return 接口响应结果
-     */
-    @PostMapping("/batchDelete")
-    public ResponseEntity<?> batchDelete(@RequestBody DeleteRequest deleteRequest) {
-
-
-        JSONObject result = categoryService.batchDeleteExaDefinitionLinks(deleteRequest.getIds());
-
-        return ResponseEntity.ok(result);
-
-    }
 
     @PostMapping("/batchCreateLinks")
     public List<EXADefinitionLinkViewDTO> batchCreateLinks(@RequestBody AttributeVO attributeVO) {
@@ -162,16 +132,5 @@ public class CategoryController {
 
     }
 
-    /**
-     * 按分类查询属性
-     *
-     * @return 分页结果
-     */
-    @GetMapping("/getAttributes1")
-    public PageResult getAttributes1(CategoryQueryDto queryDto) {
-
-        return categoryService.getAttributes1(queryDto);
-
-    }
 
 }
