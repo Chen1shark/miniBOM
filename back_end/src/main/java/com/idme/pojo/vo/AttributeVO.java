@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -30,4 +32,10 @@ public class AttributeVO {
 
     //属性状态
     private Boolean disableFlag;
+
+    private String code;
+
+    private Long classificationId;
+
+    private List<Long> sourceIds;
 }

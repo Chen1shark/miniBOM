@@ -47,7 +47,7 @@ public class AttributeServiceImpl implements AttributeService {
     }
 
     /**
-     * 根据id查询属性
+     * 根据id查找属性
      * @param id
      * @return
      */
