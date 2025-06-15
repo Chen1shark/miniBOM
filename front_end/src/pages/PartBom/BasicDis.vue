@@ -41,7 +41,7 @@
         <el-table-column prop="source" label="分类码"/>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleClick(scope.row)">
+            <el-button link type="primary" size="small" @click="handleEdit(scope.row)">
               <el-icon><Edit /></el-icon>
             </el-button>
             <el-button link type="primary" size="small" @click="handleDelete(scope.row)">
@@ -63,6 +63,13 @@
           @current-change="handleCurrentChange"
         />
       </div>
+
+      <!-- 编辑弹窗 -->
+      <EditDialog
+        v-model:visible="dialogVisible"
+        :row-data="currentRow"
+        @save="handleSave"
+      />
     </div>
   </template>
   
@@ -70,6 +77,7 @@
   import { onMounted, ref, reactive, computed } from 'vue'
   import { Edit, DeleteFilled, Plus, Search } from '@element-plus/icons-vue'
   import { getAllParts } from '@/mock/partBom'
+  import EditDialog from './Editdialog.vue'
 
   // 分页相关数据
   const currentPage = ref(1)
@@ -176,14 +184,29 @@
   };
 
   // 编辑方法
-  const handleClick = (row) => {
+  const handleEdit = (row) => {
     // 实现编辑逻辑
-  };
+    
+    currentRow.value = {...row}
+    dialogVisible.value = true
+  
+  }
 
   // 删除方法
   const handleDelete = (row) => {
     // 实现删除逻辑
   };
+
+
+  const handleSave = (data) => {
+    
+    dialogVisible.value = false
+  }
+  
+  // 弹窗标签页相关数据
+  const dialogVisible = ref(false)
+  const currentRow = ref(null)
+
   
   </script>
   
