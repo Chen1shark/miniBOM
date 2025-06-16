@@ -2,6 +2,7 @@ package com.idme.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.innovation.rdm.xdm.dto.relation.EXADefinitionLinkViewDTO;
+import com.idme.pojo.dto.AttributeIdDto;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
@@ -139,5 +140,12 @@ public class CategoryController {
         return categoryService.queryAttribute(linkId);
     }
 
+    @DeleteMapping("/deleteAttribute")
+    public Result deleteAttribute(@RequestBody AttributeIdDto attributeIdDto){
+
+        categoryService.deleteAttribute(attributeIdDto);
+
+        return Result.success();
+    }
 
 }

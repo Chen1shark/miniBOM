@@ -21,6 +21,7 @@ import com.idme.constant.JwtClaimsConstant;
 import com.idme.constant.MessageConstant;
 import com.idme.context.BaseContext;
 import com.idme.exception.CategoryNotFoundException;
+import com.idme.pojo.dto.AttributeIdDto;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
@@ -323,6 +324,11 @@ public class CategoryServiceImpl implements CategoryService {
         return exaDefinitionLinkDelegator.batchCreate(createDTOList);
     }
 
+    /**
+     * 根据分类查询属性
+     * @param linkId
+     * @return
+     */
 
     public List<Map<String, Object>> queryAttribute(String linkId) {
         String url = "https://dme.cn-north-4.huaweicloud.com/rdm_b49541bdd3de4658aab470544248649c_app/publicservices/rdm/basic/api/ClassificationNode/attribute/find/100/1";
@@ -368,6 +374,35 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (RuntimeException ex) {
             throw new CategoryNotFoundException(MessageConstant.CATEGORY_NOT_FOUND);
         }
+    }
+
+
+    public void deleteAttribute(AttributeIdDto attributeIdDto) {
+        String url = "https://dme.cn-north-4.huaweicloud.com/rdm_b49541bdd3de4658aab470544248649c_app/publicservices/rdm/basic/api/ClassificationNode/attribute/remove";
+        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+
+        //构建请求体
+        params.put("linkIds", attributeIdDto.getIds());
+        requestBody.put("params", params);
+
+        //构建请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-Auth-Token", BaseContext.getCurrentToken());
+
+        HttpClientUtil.HttpResponse response = HttpClientUtil.doPost4JsonWithHeaders(url, requestBody, headers);
+
+        // 1. 将响应体解析为JSON对象
+        JSONObject responseJson = JSON.parseObject(response.getBody());
+
+        // 2. 获取第一个字段的值
+        String firstFieldName = responseJson.keySet().iterator().next();
+        Object firstFieldValue = responseJson.get(firstFieldName);
+
+
+        return;
+
+
     }
 
 }

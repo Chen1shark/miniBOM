@@ -2,6 +2,7 @@ package com.idme.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.huawei.innovation.rdm.xdm.dto.relation.EXADefinitionLinkViewDTO;
+import com.idme.pojo.dto.AttributeIdDto;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
@@ -42,6 +43,12 @@ public interface CategoryService {
 
     List<EXADefinitionLinkViewDTO> batchCreateLinks(AttributeVO attributeVO);
 
+    /**
+     * 根据分类查询属性
+     * @param linkId
+     * @return
+     */
     List<Map<String, Object>> queryAttribute(String linkId);
 
+    void deleteAttribute(AttributeIdDto attributeIdDto);
 }
