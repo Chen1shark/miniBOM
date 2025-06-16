@@ -1,11 +1,10 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="编辑信息"
+    title="添加部件"
     width="60%"
     :before-close="handleClose"
   >  
-     <!--下面具体内容待修改-->
     <el-tabs v-model="activeTab">
       <el-tab-pane label="基本属性" name="basic">
         <el-form :model="formData" label-width="120px">
@@ -59,30 +58,19 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="BOM清单" name="attributes">
+      <el-tab-pane label="扩展属性" name="extended">
         <el-form :model="formData" label-width="120px">
-          <el-form-item label="材料">
-            <el-input v-model="formData.material" />
+          <el-form-item label="重量">
+            <el-input v-model="formData.weight" />
           </el-form-item>
-          <el-form-item label="规格">
-            <el-input v-model="formData.specification" />
+          <el-form-item label="高度/厚度">
+            <el-input v-model="formData.height" />
           </el-form-item>
-          <el-form-item label="单位">
-            <el-input v-model="formData.unit" />
+          <el-form-item label="宽度">
+            <el-input v-model="formData.width" />
           </el-form-item>
-        </el-form>
-      </el-tab-pane>
-
-      <el-tab-pane label="版本管理" name="bom">
-        <el-form :model="formData" label-width="120px">
-          <el-form-item label="父级零件">
-            <el-input v-model="formData.parentPart" />
-          </el-form-item>
-          <el-form-item label="数量">
-            <el-input-number v-model="formData.quantity" :min="1" />
-          </el-form-item>
-          <el-form-item label="备注">
-            <el-input type="textarea" v-model="formData.notes" />
+          <el-form-item label="长度">
+            <el-input v-model="formData.length" />
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -105,15 +93,11 @@ const props = defineProps({
   visible: {
     type: Boolean,
     default: false
-  },
-  rowData: {
-    type: Object,
-    default: () => ({})
   }
 })
 
 // 定义emit事件
-const emit = defineEmits(['update:visible'])
+const emit = defineEmits(['update:visible', 'save'])
 
 // 控制弹窗显示
 const dialogVisible = ref(props.visible)
@@ -121,28 +105,7 @@ const dialogVisible = ref(props.visible)
 // 当前激活的标签页
 const activeTab = ref('basic')
 
-// 表单数据
-const formData = reactive({
-  partNumber: '',
-  partName: '',
-  defaultUnit: 'PCS',
-  source:'',
-  assemblyMode:'',
-  categoryCode:'',
-  weight:'',
-  height:'',
-  width:'',
-  length:'',
-  description: '',
-  material: '',
-  specification: '',
-  unit: '',
-  parentPart: '',
-  quantity: 1,
-  notes: ''
-})
-
-//测试数据
+// 分类树测试数据
 const categoryTree = [
   {
     id: '1',
@@ -216,12 +179,27 @@ const categoryTree = [
   }
 ]
 
+// 表单数据
+const formData = reactive({
+  partName: '',
+  defaultUnit: '',
+  assemblyMode: '',
+  categoryCode: '',
+  source: '',
+  weight: '',
+  height: '',
+  width: '',
+  length: ''
+})
+
 // 监听visible属性变化
 watch(() => props.visible, (newVal) => {
   dialogVisible.value = newVal
   if (newVal) {
-    // 当弹窗打开时，将行数据填充到表单
-    Object.assign(formData, props.rowData)
+    // 重置表单数据
+    Object.keys(formData).forEach(key => {
+      formData[key] = ''
+    })
   }
 })
 
@@ -232,6 +210,7 @@ const handleClose = () => {
 
 // 保存数据
 const handleSave = () => {
+  emit('save')
   handleClose()
 }
 </script>
@@ -249,5 +228,9 @@ const handleSave = () => {
 
 .el-tabs {
   margin-bottom: 20px;
+}
+
+.el-select {
+  width: 100%;
 }
 </style> 

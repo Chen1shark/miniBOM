@@ -70,6 +70,12 @@
         :row-data="currentRow"
         @save="handleSave"
       />
+
+      <!-- 添加弹窗 -->
+      <AddDialog
+        v-model:visible="addDialogVisible"
+        @save="handleAddSave"
+      />
     </div>
   </template>
   
@@ -78,6 +84,7 @@
   import { Edit, DeleteFilled, Plus, Search } from '@element-plus/icons-vue'
   import { getAllParts } from '@/mock/partBom'
   import EditDialog from './Editdialog.vue'
+  import AddDialog from './AddDialog.vue'
 
   // 分页相关数据
   const currentPage = ref(1)
@@ -180,7 +187,7 @@
 
   // 添加方法
   const handleAdd = () => {
-    // 实现添加逻辑
+    addDialogVisible.value = true
   };
 
   // 编辑方法
@@ -198,15 +205,20 @@
   };
 
 
-  const handleSave = (data) => {
+  const handleSave = () => {
     
     dialogVisible.value = false
   }
   
   // 弹窗标签页相关数据
   const dialogVisible = ref(false)
+  const addDialogVisible = ref(false)
   const currentRow = ref(null)
 
+  const handleAddSave = (data) => {
+   
+    addDialogVisible.value = false
+  }
   
   </script>
   
