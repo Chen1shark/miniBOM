@@ -81,11 +81,13 @@ public class CategoryController {
      *
      * @return 分页结果
      */
-    @GetMapping("/name")
-    public Result<PageResult> getCategoryByName(CategoryQueryDto queryDto) {
+    @GetMapping("/query")
+    public Result<PageResult> getCategoryByOption(CategoryQueryDto queryDto) {
         queryDto.builder()
-                .curPage(1)
-                .pageSize(10)
+                .curPage(queryDto.getCurPage())
+                .pageSize(queryDto.getPageSize())
+                .name(queryDto.getName())
+                .code(queryDto.getCode())
                 .build();
         PageResult result = categoryService.queryCategories(queryDto);
         return Result.success(result);
@@ -124,12 +126,17 @@ public class CategoryController {
 
 
     @PostMapping("/batchCreateLinks")
-    public List<EXADefinitionLinkViewDTO> batchCreateLinks(@RequestBody AttributeVO attributeVO) {
+    public Result batchCreateLinks(@RequestBody AttributeVO attributeVO) {
+
+        return Result.success(categoryService.batchCreateLinks(attributeVO));
 
 
-        return categoryService.batchCreateLinks(attributeVO);
+    }
 
+    @GetMapping("/queryAttribute")
+    public List<Map<String, Object>>  queryAttribute(String linkId) {
 
+        return categoryService.queryAttribute(linkId);
     }
 
 

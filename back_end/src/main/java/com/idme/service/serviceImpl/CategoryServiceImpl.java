@@ -2,6 +2,7 @@ package com.idme.service.serviceImpl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.huawei.iit.sdk.common.exception.RDMAppException;
 import com.huawei.innovation.rdm.coresdk.basic.dto.GenericLinkTypeDTO;
 import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdModifierDTO;
@@ -15,16 +16,22 @@ import com.huawei.innovation.rdm.xdm.delegator.*;
 import com.huawei.innovation.rdm.xdm.dto.entity.*;
 import com.huawei.innovation.rdm.xdm.dto.relation.EXADefinitionLinkCreateDTO;
 import com.huawei.innovation.rdm.xdm.dto.relation.EXADefinitionLinkViewDTO;
+import com.idme.constant.CategoryConstant;
 import com.idme.constant.JwtClaimsConstant;
+import com.idme.constant.MessageConstant;
+import com.idme.context.BaseContext;
+import com.idme.exception.CategoryNotFoundException;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
+import com.idme.pojo.vo.CategorySimpleVO;
 import com.idme.pojo.vo.CategoryVO;
 import com.idme.properties.JwtProperties;
 import com.idme.result.PageResult;
 import com.idme.result.Result;
 import com.idme.service.CategoryService;
 import com.idme.service.UserService;
+import com.idme.utils.HttpClientUtil;
 import com.idme.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -33,10 +40,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.idme.pojo.dto.CategoryCreateDto;
 import com.huawei.innovation.rdm.coresdk.basic.dto.ObjectReferenceParamDTO;
@@ -87,15 +92,28 @@ public class CategoryServiceImpl implements CategoryService {
             queryRequestVo.addCondition("status", ConditionType.EQUAL, queryDto.getStatus());
         }
 
+        long count = classificationNodeDelegator.count(queryRequestVo);
 
         // 调用底层API执行分页查询
         List<ClassificationNodeViewDTO> result = classificationNodeDelegator.find(queryRequestVo, rdmPageVO);
 
         if (result == null || result.isEmpty()){
-            return PageResult.builder()
-                    .total(0)
-                    .records(null)
-                    .build();
+            QueryRequestVo queryRequestVo1 = new QueryRequestVo();
+            queryRequestVo1.addCondition("businessCode", ConditionType.EQUAL, queryDto.getName());
+            List<ClassificationNodeViewDTO> result1 = classificationNodeDelegator.find(queryRequestVo1, new RDMPageVO(1,10));
+            if(result1 != null && result1.size() > 0){
+                List<CategoryVO> categoryVOs_tmp = convertToCategoryVO(result1);
+                return PageResult.builder()
+                        .total(1)
+                        .records(categoryVOs_tmp)
+                        .build();
+            }
+            else{
+                return PageResult.builder()
+                        .total(0)
+                        .records(null)
+                        .build();
+            }
         }
 
         // 转换结果为VO对象
@@ -103,7 +121,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         // 封装分页结果（注意：实际总数需从RDMPageVO获取，此处简化处理）
         return PageResult.builder()
-                .total(result.size())
+                .total(count)
                 .records(categoryVOs)
                 .build();
     }
@@ -303,6 +321,53 @@ public class CategoryServiceImpl implements CategoryService {
 
         // 调用batchCreate方法批量新增
         return exaDefinitionLinkDelegator.batchCreate(createDTOList);
+    }
+
+
+    public List<Map<String, Object>> queryAttribute(String linkId) {
+        String url = "https://dme.cn-north-4.huaweicloud.com/rdm_b49541bdd3de4658aab470544248649c_app/publicservices/rdm/basic/api/ClassificationNode/attribute/find/100/1";
+
+        // 构建固定请求参数
+        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("sort", "DESC");
+        params.put("orderBy", "lastUpdateTime");
+        params.put("isNeedTotal", true);
+
+        // 构建filter条件（固定linkId和type）
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("joiner", "and");
+        Map<String, Object> linkIdCondition = new HashMap<>();
+        linkIdCondition.put("conditionName", "linkId");
+        linkIdCondition.put("operator", "=");
+        linkIdCondition.put("conditionValues", Collections.singletonList(linkId));
+
+        Map<String, Object> typeCondition = new HashMap<>();
+        typeCondition.put("conditionName", "type");
+        typeCondition.put("operator", "<>");
+        typeCondition.put("conditionValues", Collections.singletonList("CATEGORY"));
+
+        filter.put("conditions", Arrays.asList(linkIdCondition, typeCondition));
+        params.put("filter", filter);
+        requestBody.put("params", params);
+
+        // 构建请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("X-Auth-Token", BaseContext.getCurrentToken());
+
+        try {
+            HttpClientUtil.HttpResponse response = HttpClientUtil.doPost4JsonWithHeaders(url, requestBody, headers);
+
+            // 解析响应体为Map结构
+            Map<String, Object> responseMap = JSON.parseObject(response.getBody(),
+                    new TypeReference<Map<String, Object>>() {});
+
+            // 直接返回data字段的列表（已为Map集合）
+            return (List<Map<String, Object>>) responseMap.get("data");
+
+        } catch (RuntimeException ex) {
+            throw new CategoryNotFoundException(MessageConstant.CATEGORY_NOT_FOUND);
+        }
     }
 
 }

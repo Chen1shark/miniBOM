@@ -1,21 +1,42 @@
 <template>
-  <el-dialog title="选择属性" :model-value="visible" width="800px" @close="handleClose">
-    <div class="attribute-selection-dialog">
-      <div class="search-area">
-         <el-input v-model="searchAttribute" placeholder="搜索属性中文名/英文名" clearable @keyup.enter="fetchAttributes"></el-input>
-         <el-button type="primary" @click="fetchAttributes">搜索</el-button>
-      </div>
-
-      <el-table :data="attributeList" style="width: 100%; margin-top: 10px;" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="nameZh" label="属性中文名称" width="180" />
-        <el-table-column prop="nameEn" label="属性英文名称" width="180" />
-        <el-table-column prop="dataType" label="数据类型" width="100" />
-         <el-table-column prop="descZh" label="属性中文描述" show-overflow-tooltip />
-      </el-table>
-       <!-- TODO: 添加分页 -->
-
+  <el-dialog
+    title="选择属性"
+    :model-value="visible"
+    width="800px"
+    @close="handleClose"
+  >
+    <div class="search-bar">
+      <el-input
+        v-model="searchKeyword"
+        placeholder="请输入属性名称搜索"
+        @input="handleSearch"
+        clearable
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
     </div>
+
+    <el-table
+      :data="attributeList"
+      style="width: 100%"
+      @selection-change="handleSelectionChange"
+      v-loading="loading"
+    >
+      <el-table-column type="selection" width="55" :selectable="isSelectable" />
+      <el-table-column prop="nameZh" label="属性中文名称" />
+      <el-table-column prop="nameEn" label="属性英文名称" />
+      <el-table-column prop="dataType" label="数据类型" />
+      <el-table-column prop="description" label="中文描述" show-overflow-tooltip />
+      <el-table-column prop="descriptionEn" label="英文描述" show-overflow-tooltip />
+      <el-table-column label="状态" width="80">
+        <template #default="scope">
+          <el-tag v-if="scope.row.selected" type="success">已选</el-tag>
+        </template>
+      </el-table-column>
+    </el-table>
+
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
       <el-button type="primary" @click="handleConfirm">确定</el-button>
@@ -24,96 +45,71 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, watch } from 'vue';
+import { Search } from '@element-plus/icons-vue';
+import { ElMessage } from 'element-plus';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
-  // initSelectedAttributes: { type: Array, default: () => [] }, // 可能需要传入已选属性
+  attributeList: { type: Array, default: () => [] }
 });
 
-const emit = defineEmits(['close', 'confirm']);
+const emit = defineEmits(['close', 'confirm', 'search']);
 
-const searchAttribute = ref('');
-const attributeList = ref([]); // 可选属性列表
-const selectedAttributes = ref([]); // 当前选中的属性
+const searchKeyword = ref('');
+const loading = ref(false);
+const selectedAttributes = ref([]);
 
-// 模拟获取属性列表的方法
-const fetchAttributes = () => {
-  console.log('Fetching attributes with search:', searchAttribute.value);
-  // TODO: 调用接口获取属性列表数据，可能需要分页和搜索参数
-  // 模拟数据
-  attributeList.value = [
-    {
-      id: 1,
-      nameZh: '产品型号',
-      nameEn: 'Product_Model',
-      dataType: '字符串型',
-      descZh: '这是一个产品型号的描述信息',
-    },
-    {
-      id: 2,
-      nameZh: '产品重量',
-      nameEn: 'Product_Weight',
-      dataType: '实数型',
-      descZh: '产品的重量信息',
-    },
-    {
-      id: 3,
-      nameZh: '产品尺寸',
-      nameEn: 'Product_Size',
-      dataType: '字符串型',
-      descZh: '产品的尺寸信息',
-    },
-     {
-      id: 4,
-      nameZh: '颜色',
-      nameEn: 'Color',
-      dataType: '字符串型',
-      descZh: '产品的颜色',
-    },
-     {
-      id: 5,
-      nameZh: '材质',
-      nameEn: 'Material',
-      dataType: '字符串型',
-      descZh: '产品的材质',
-    },
-  ];
+// 处理搜索
+const handleSearch = () => {
+  emit('search', searchKeyword.value);
 };
 
+// 判断属性是否可选
+const isSelectable = (row) => {
+  return !row.selected;
+};
+
+// 处理表格选择变化
 const handleSelectionChange = (selection) => {
   selectedAttributes.value = selection;
 };
 
+// 处理关闭
 const handleClose = () => {
+  searchKeyword.value = '';
+  selectedAttributes.value = [];
   emit('close');
 };
 
+// 处理确认
 const handleConfirm = () => {
+  if (selectedAttributes.value.length === 0) {
+    ElMessage.warning('请至少选择一个属性');
+    return;
+  }
   emit('confirm', selectedAttributes.value);
+  handleClose();
 };
 
-// 当对话框可见时加载属性列表
+// 监听属性列表变化
+watch(() => props.attributeList, (newVal) => {
+  console.log('属性列表更新:', newVal); // 添加日志
+  // 更新选中状态
+  selectedAttributes.value = newVal.filter(attr => attr.selected);
+}, { deep: true });
+
+// 监听对话框显示状态
 watch(() => props.visible, (newVal) => {
   if (newVal) {
-    fetchAttributes();
-     selectedAttributes.value = []; // 打开对话框时清空之前的选择
-     searchAttribute.value = ''; // 清空搜索框
+    // 对话框打开时，重置搜索关键字
+    searchKeyword.value = '';
   }
 });
-
-// onMounted(() => {
-//   fetchAttributes(); // 可以在这里初始加载，也可以等 visible 为 true 时再加载
-// });
 </script>
 
 <style scoped>
-.attribute-selection-dialog {
-  padding: 0 20px 20px 20px; /* 调整内边距 */
-}
-
-.search-area {
-   display: flex;
-   gap: 10px; /* 搜索框和按钮之间的间距 */
+.search-bar {
+  margin-bottom: 20px;
 }
 </style> 

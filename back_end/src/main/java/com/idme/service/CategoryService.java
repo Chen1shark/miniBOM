@@ -11,6 +11,7 @@ import com.idme.pojo.dto.CategoryCreateDto;
 import com.idme.result.Result;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CategoryService {
     /**
@@ -40,5 +41,7 @@ public interface CategoryService {
     void deleteCategory(Long categoryId);
 
     List<EXADefinitionLinkViewDTO> batchCreateLinks(AttributeVO attributeVO);
+
+    List<Map<String, Object>> queryAttribute(String linkId);
 
 }

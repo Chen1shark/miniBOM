@@ -9,7 +9,7 @@
           </el-radio-group>
         </div>
         <div class="search-input">
-          <el-input v-model="search" :placeholder="searchPlaceholder" clearable @keyup.enter="fetchList">
+          <el-input v-model="search" :placeholder="searchPlaceholder" clearable @keyup.enter="handleSearch">
             <template #prefix>
               <el-icon class="el-input__icon"><Search /></el-icon>
             </template>
@@ -74,6 +74,18 @@
           @current-change="handleCurrentChange"
         />
       </div>
+
+      <div class="pagination-container" v-else-if="queryType === 'category'">
+        <el-pagination
+          v-model:current-page="categoryPage"
+          v-model:page-size="categoryPageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="categoryTotal"
+          @size-change="handleCategorySizeChange"
+          @current-change="handleCategoryPageChange"
+        />
+      </div>
     </el-card>
 
     <attr-form
@@ -126,6 +138,9 @@ import { apiAttributeGet } from '@/api/attributeGet'
 import { apiAttributeModify } from '@/api/attributeModify'
 import { apiAttributeCreate } from '@/api/attributeCreate'
 import { apiAttributeDel } from '@/api/attributeDel'
+import { apiAttrGetCate } from '@/api/attrGetCate'
+import { apiCateGet } from '@/api/CateGet'
+import { apiCateDelete } from '@/api/CateDelete'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
@@ -171,13 +186,57 @@ const formRules = {
 
 const formRef = ref(null)
 
-// 先定义 fetchList 函数
+// 分类分页相关变量
+const categoryPage = ref(1)
+const categoryPageSize = ref(10)
+const categoryTotal = ref(0)
+
+// 获取分类列表
+const fetchCategoryList = async () => {
+  loading.value = true
+  try {
+    const res = await apiCateGet(categoryPage.value, categoryPageSize.value, search.value.trim(), '')
+    if (res.code === 1) {
+      categoryList.value = res.data.records.map(item => ({
+        categoryCode: item.code,
+        categoryNameZh: item.name,
+        categoryNameEn: item.nameEn,
+        parentCategoryNameZh: item.description,
+        parentCategoryNameEn: item.descriptionEn,
+        status: item.status,
+        parentId: item.parentId ? BigInt(item.parentId) : null,
+        id: BigInt(item.id)
+      }))
+      categoryTotal.value = res.data.total
+    } else {
+      ElMessage.error(res.msg || '获取分类列表失败')
+    }
+  } catch (error) {
+    console.error('获取分类列表失败:', error)
+    ElMessage.error('获取分类列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 分类分页处理函数
+const handleCategoryPageChange = (val) => {
+  categoryPage.value = val
+  fetchCategoryList()
+}
+
+const handleCategorySizeChange = (val) => {
+  categoryPageSize.value = val
+  categoryPage.value = 1
+  fetchCategoryList()
+}
+
+// 获取属性列表
 const fetchList = async () => {
   loading.value = true
   try {
-    const res = await apiAttributeGet(currentPage.value, pageSize.value, search.value || '')
+    const res = await apiAttributeGet(currentPage.value, pageSize.value, search.value.trim())
     if (res.code === 1) {
-      // 使用 BigInt 处理 ID
       attrList.value = res.data.list.map(item => ({
         ...item,
         id: BigInt(item.id)
@@ -207,22 +266,54 @@ const handleSizeChange = (val) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1
-  fetchList()
+  if (queryType.value === 'category') {
+    categoryPage.value = 1
+    fetchCategoryList()
+  } else {
+    currentPage.value = 1
+    fetchList()
+  }
 }
 
-// 最后再设置 watch
+// 修改watch，根据查询类型调用不同的获取列表函数
+watch(
+  () => queryType.value,
+  (newType) => {
+    // 清空搜索框
+    search.value = ''
+    if (newType === 'category') {
+      fetchCategoryList()
+    } else {
+      fetchList()
+    }
+  }
+)
+
+// 生命周期钩子
+onMounted(() => {
+  // 初始化时根据当前路由设置查询类型
+  if (route.path.startsWith('/Home/category/') && route.path !== '/Home/category/query-all') {
+    queryType.value = 'category'
+    fetchCategoryList() // 立即加载分类数据
+  } else if (route.path.startsWith('/Home/attribute/')) {
+    queryType.value = 'attribute'
+    fetchList() // 立即加载属性数据
+  }
+})
+
+// 添加路由监听
 watch(
   () => route.path,
-  () => {
-    if (route.path.startsWith('/Home/category/') && route.path !== '/Home/category/query-all') {
+  (newPath) => {
+    if (newPath.startsWith('/Home/category/') && newPath !== '/Home/category/query-all') {
       queryType.value = 'category'
-    } else {
+      fetchCategoryList() // 路由变化时加载分类数据
+    } else if (newPath.startsWith('/Home/attribute/')) {
       queryType.value = 'attribute'
+      fetchList() // 路由变化时加载属性数据
     }
-    fetchList()
   },
-  { immediate: true }
+  { immediate: true } // 确保首次加载时也执行
 )
 
 // 计算属性
@@ -337,49 +428,67 @@ async function handleFormSubmit(data) {
     loading.value = false
   }
 }
-function openCategory(row) {
-  // TODO: 查询分类信息接口
-  console.log('查看分类:', row)
-  categoryList.value = [
-    {
-      categoryCode: '0231B',
-      categoryNameZh: '发射功率',
-      categoryNameEn: 'Transmit_Power',
-      parentCategoryNameZh: '射频模块',
-      parentCategoryNameEn: 'RF Module',
-    },
-     {
-      categoryCode: '01A01',
-      categoryNameZh: '通用器件',
-      categoryNameEn: 'General Components',
-      parentCategoryNameZh: '无',
-      parentCategoryNameEn: 'None',
-    },
-  ]
-  showCategory.value = true
+async function openCategory(row) {
+  try {
+    const res = await apiAttrGetCate(row.id)
+    if (res.code === 1) {
+      categoryList.value = res.data.map(item => ({
+        categoryCode: item.businessCode,
+        categoryNameZh: item.name,
+        categoryNameEn: item.nameEn,
+        parentCategoryNameZh: item.description,
+        parentCategoryNameEn: item.descriptionEn
+      }))
+      showCategory.value = true
+    } else {
+      ElMessage.error(res.msg || '获取分类信息失败')
+    }
+  } catch (error) {
+    console.error('获取分类信息失败:', error)
+    ElMessage.error('获取分类信息失败')
+  }
 }
 function openCategoryEdit(row) {
   categoryFormMode.value = 'edit'
-  categoryFormData.value = { ...row }
+  categoryFormData.value = {
+    id: BigInt(row.id),
+    code: row.categoryCode,
+    name: row.categoryNameZh,
+    nameEn: row.categoryNameEn,
+    description: row.parentCategoryNameZh,
+    descriptionEn: row.parentCategoryNameEn,
+    status: row.status,
+    parentId: row.parentId
+  }
   showCategoryForm.value = true
 }
 function openCategoryDelete(row) {
   deleteCategoryRow.value = row
   showCategoryDelete.value = true
 }
-function handleCategoryDelete() {
-  // TODO: 调用删除分类接口
-  console.log('删除分类:', deleteCategoryRow.value)
-  showCategoryDelete.value = false
-  // 模拟删除后刷新列表
-  fetchList()
+async function handleCategoryDelete() {
+  if (!deleteCategoryRow.value) return;
+  
+  try {
+    const res = await apiCateDelete(BigInt(deleteCategoryRow.value.id));
+    if (res.code === 1) {
+      ElMessage.success('删除成功');
+      showCategoryDelete.value = false;
+      // 刷新分类列表
+      fetchCategoryList();
+    } else {
+      ElMessage.error(res.msg || '删除失败');
+    }
+  } catch (error) {
+    console.error('删除分类失败:', error);
+    ElMessage.error('删除分类失败');
+  }
 }
 function handleCategoryFormSubmit(data) {
   console.log('分类表单提交:', data)
-  // TODO: 调用新建/编辑分类接口
   showCategoryForm.value = false
-  // 模拟提交后刷新列表
-  fetchList()
+  // 刷新列表
+  fetchCategoryList()
 }
 const goToCategoryDetail = (row) => {
   router.push({
@@ -390,17 +499,6 @@ const goToCategoryDetail = (row) => {
     }
   })
 }
-
-// 生命周期钩子
-onMounted(() => {
-  // 初始化时根据当前路由设置查询类型
-  if (route.path.startsWith('/Home/category/') && route.path !== '/Home/category/query-all') {
-    queryType.value = 'category'
-  } else if (route.path.startsWith('/Home/attribute/')) {
-    queryType.value = 'attribute'
-  }
-  fetchList()
-})
 </script>
 
 <style scoped>
@@ -412,49 +510,46 @@ onMounted(() => {
 }
 
 .attr-card {
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .attr-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  padding: 20px;
-  background-color: #f5f7fa;
-  border-radius: 8px;
   margin-bottom: 20px;
 }
 
 .query-type-switch {
-  flex-shrink: 0;
+  margin-right: 20px;
 }
 
 .search-input {
   flex: 1;
   max-width: 300px;
+  margin-right: 20px;
 }
 
+/* 添加表格容器样式 */
+.el-table {
+  flex: 1;
+  overflow: auto;
+}
+
+/* 确保表格内容可以滚动 */
+:deep(.el-table__body-wrapper) {
+  overflow-y: auto;
+  max-height: calc(100vh - 280px); /* 调整这个值以适应您的布局 */
+}
+
+/* 固定分页器在底部 */
 .pagination-container {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
 }
-
-/* 表格容器样式 */
-.el-table {
-  flex: 1;
-  margin-bottom: 20px;
-}
-
-/* 确保表格内容可以滚动 */
-.el-table__body-wrapper {
-  overflow-y: auto;
-  max-height: calc(100vh - 300px);
-}
-
-/* 可以添加更多样式来优化表格、按钮等的显示 */
 </style>
   
