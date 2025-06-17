@@ -2,13 +2,13 @@
   <el-dialog title="分类属性信息" :model-value="visible" width="800px" @close="$emit('close')">
     <el-tabs v-model="activeTab">
       <el-tab-pane label="分类信息" name="category">
-        <el-table :data="categoryList" style="width: 100%">
-          <el-table-column prop="categoryCode" label="分类号" />
-          <el-table-column prop="categoryNameZh" label="分类中文名" />
-          <el-table-column prop="categoryNameEn" label="分类英文名" />
-          <el-table-column prop="parentCategoryNameZh" label="分类中文父类名" />
-          <el-table-column prop="parentCategoryNameEn" label="分类英文父类名" />
-        </el-table>
+    <el-table :data="categoryList" style="width: 100%">
+      <el-table-column prop="categoryCode" label="分类号" />
+      <el-table-column prop="categoryNameZh" label="分类中文名" />
+      <el-table-column prop="categoryNameEn" label="分类英文名" />
+      <el-table-column prop="parentCategoryNameZh" label="分类中文父类名" />
+      <el-table-column prop="parentCategoryNameEn" label="分类英文父类名" />
+    </el-table>
       </el-tab-pane>
       <el-tab-pane label="属性信息" name="attributes">
         <el-table :data="attributeList" style="width: 100%" v-loading="loading">
@@ -81,7 +81,7 @@ watch(() => props.categoryList, async (newList) => {
     attributeList.value = [] // 如果没有分类或分类没有id，清空属性列表
   }
 }, { immediate: true })
-</script>
+</script> 
 
 <style scoped>
 .el-tabs {
