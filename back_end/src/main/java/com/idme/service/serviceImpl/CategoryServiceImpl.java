@@ -56,12 +56,6 @@ public class CategoryServiceImpl implements CategoryService {
     private ClassificationNodeDelegator classificationNodeDelegator;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private JwtProperties jwtProperties;
-
-    @Autowired
     private EXADefinitionLinkDelegator exaDefinitionLinkDelegator;
 
     @Override
