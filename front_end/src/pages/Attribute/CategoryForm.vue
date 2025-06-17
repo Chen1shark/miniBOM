@@ -66,7 +66,14 @@
             <el-table-column prop="descriptionEn" label="英文描述" show-overflow-tooltip />
             <el-table-column label="操作">
               <template #default="scope">
-                <el-button size="small" type="danger" @click="removeAttribute(scope.$index)">移除</el-button>
+                <el-button 
+                  type="danger" 
+                  size="small" 
+                  @click="handleDeleteAttribute(scope.$index)"
+                  :disabled="!scope.row.linkId"
+                >
+                  删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -100,7 +107,8 @@ import { apiCateUpdate } from '@/api/CateUpdate';
 import { apiCateQueryAttribute } from '@/api/CateQueryAttribute';
 import { apiAttributeGet } from '@/api/attributeGet';
 import { apiCateAddAttr } from '@/api/CateAddAttr';
-import { ElMessage } from 'element-plus';
+import { apiCateAttrDel } from '@/api/CateAttrDel';
+import { ElMessage, ElMessageBox } from 'element-plus';
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -156,6 +164,7 @@ const loadCategoryAttributes = async (categoryId) => {
     // 将属性数据同步到表单数据中
     formData.value.attributes = attributes.map(attr => ({
       id: attr.id || '',
+      linkId: attr.linkId || '',
       nameZh: attr.name || '',
       nameEn: attr.nameEn || '',
       dataType: attr.type || '',
@@ -378,6 +387,40 @@ const handleParentChange = (value) => {
     if (selectedParent) {
       // 可以在这里添加一些额外的逻辑，比如设置默认值等
       console.log('选中的父节点:', selectedParent);
+    }
+  }
+};
+
+// 删除属性
+const handleDeleteAttribute = async (index) => {
+  try {
+    const attribute = formData.value.attributes[index];
+    if (!attribute.linkId) {
+      ElMessage.error('属性linkId不存在，无法删除');
+      return;
+    }
+
+    await ElMessageBox.confirm('确定要删除该属性吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+
+    const response = await apiCateAttrDel({
+      ids: [BigInt(attribute.linkId).toString()]
+    });
+    
+    if (response.code === 1) {
+      ElMessage.success('删除成功');
+      // 从表单数据中移除该属性
+      formData.value.attributes.splice(index, 1);
+    } else {
+      ElMessage.error(response.msg || '删除失败');
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除属性失败:', error);
+      ElMessage.error('删除属性失败');
     }
   }
 };
