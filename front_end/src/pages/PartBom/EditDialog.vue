@@ -4,9 +4,10 @@
     title="编辑信息"
     width="60%"
     :before-close="handleClose"
-  >  
-     <!--下面具体内容待修改-->
+  >
+    <!-- 页签区 -->
     <el-tabs v-model="activeTab">
+      <!-- 基本属性 -->
       <el-tab-pane label="基本属性" name="basic">
         <el-form :model="formData" label-width="120px">
           <el-form-item label="产品">
@@ -26,7 +27,6 @@
               <el-option label="TRP" value="TRP" />
               <el-option label="MON" value="MON" />
               <el-option label="KG" value="KG" />
-
             </el-select>
           </el-form-item>
           <el-form-item label="来源">
@@ -46,11 +46,7 @@
               v-model="formData.categoryCode"
               :data="categoryTree"
               placeholder="请选择分类"
-              :props="{
-                label: 'name',
-                children: 'children',
-                value: 'id'
-              }"
+              :props="{ label: 'name', children: 'children', value: 'id' }"
               check-strictly
               node-key="id"
               default-expand-all
@@ -59,21 +55,39 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="BOM清单" name="attributes">
-        <el-form :model="formData" label-width="120px">
-          <el-form-item label="材料">
-            <el-input v-model="formData.material" />
-          </el-form-item>
-          <el-form-item label="规格">
-            <el-input v-model="formData.specification" />
-          </el-form-item>
-          <el-form-item label="单位">
-            <el-input v-model="formData.unit" />
-          </el-form-item>
-        </el-form>
+      <!-- BOM 清单 -->
+      <el-tab-pane label="BOM清单" name="bomList">
+        <!-- 操作工具栏 -->
+        <div class="bom-toolbar">
+          <el-button type="primary" @click="showAddPartDialog">新增子项</el-button>
+          <el-button @click="showBomDialog">查看BOM清单</el-button>
+          <el-button @click="showParentDialog">查看父项</el-button>
+        </div>
+
+        <!-- 可编辑表格 -->
+        <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
+          <el-table-column prop="code" label="编码" width="160" />
+          <el-table-column prop="name" label="名称" />
+          <el-table-column label="数量" width="120">
+            <template #default="{ row }">
+              <el-input-number v-model="row.quantity" :min="1" @change="onBomChange(row)" />
+            </template>
+          </el-table-column>
+          <el-table-column label="位号" width="160">
+            <template #default="{ row }">
+              <el-input v-model="row.position" @input="onBomChange(row)" />
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100" align="center">
+            <template #default="{ $index }">
+              <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="版本管理" name="bom">
+      <!-- 版本管理 -->
+      <el-tab-pane label="版本管理" name="version">
         <el-form :model="formData" label-width="120px">
           <el-form-item label="父级零件">
             <el-input v-model="formData.parentPart" />
@@ -88,19 +102,59 @@
       </el-tab-pane>
     </el-tabs>
 
+    <!-- 主弹窗 footer -->
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="handleClose">取消</el-button>
         <el-button type="primary" @click="handleSave">保存</el-button>
       </span>
     </template>
+
+    <!-- 查看 BOM 清单弹窗（树形） -->
+    <el-dialog v-model="bomDialogVisible" title="BOM清单" width="60%">
+      <div class="tree-header">
+        <span class="col-code">编码</span>
+        <span class="col-name">名称</span>
+        <span class="col-qty">数量</span>
+        <span class="col-pos">位号</span>
+      </div>
+      <el-tree
+        :data="bomTree"
+        node-key="code"
+        default-expand-all
+        :props="{ children: 'children' }"
+        class="bom-tree"
+      >
+        <template #default="{ data }">
+          <span class="col-code">{{ data.code }}</span>
+          <span class="col-name">{{ data.name }}</span>
+          <span class="col-qty">{{ data.quantity }}</span>
+          <span class="col-pos">{{ data.position }}</span>
+        </template>
+      </el-tree>
+    </el-dialog>
+
+    <!-- 查看父项弹窗 -->
+    <el-dialog v-model="parentDialogVisible" title="父项" width="30%">
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="父级零件">{{ formData.parentPart }}</el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
+
+    <!-- 新增子项组件 -->
+    <AddPartDialog
+      :visible="addPartDialogVisible"
+      @update:visible="v => (addPartDialogVisible = v)"
+      @add="addParts"
+    />
   </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
+import AddPartDialog from './AddPartDialog.vue'
 
-// 定义props接收父组件传递的数据
+// ---------- props & emit ----------
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -111,28 +165,24 @@ const props = defineProps({
     default: () => ({})
   }
 })
+const emit = defineEmits(['update:visible', 'save'])
 
-// 定义emit事件
-const emit = defineEmits(['update:visible'])
-
-// 控制弹窗显示
+// ---------- 对话框控制 ----------
 const dialogVisible = ref(props.visible)
-
-// 当前激活的标签页
 const activeTab = ref('basic')
 
-// 表单数据
+// ---------- 基础表单 ----------
 const formData = reactive({
   partNumber: '',
   partName: '',
   defaultUnit: 'PCS',
-  source:'',
-  assemblyMode:'',
-  categoryCode:'',
-  weight:'',
-  height:'',
-  width:'',
-  length:'',
+  source: '',
+  assemblyMode: '',
+  categoryCode: '',
+  weight: '',
+  height: '',
+  width: '',
+  length: '',
   description: '',
   material: '',
   specification: '',
@@ -142,7 +192,6 @@ const formData = reactive({
   notes: ''
 })
 
-//测试数据
 const categoryTree = [
   {
     id: '1',
@@ -216,22 +265,90 @@ const categoryTree = [
   }
 ]
 
-// 监听visible属性变化
-watch(() => props.visible, (newVal) => {
-  dialogVisible.value = newVal
-  if (newVal) {
-    // 当弹窗打开时，将行数据填充到表单
-    Object.assign(formData, props.rowData)
-  }
-})
 
-// 关闭弹窗
+// ---------- BOM 清单数据 (模拟初始树结构) ----------
+const bomItems = ref([
+  {
+    code: 'A-1000',
+    name: '主机架',
+    quantity: 1,
+    position: '-',
+    children: [
+      {
+        code: 'B-1100',
+        name: '传动系统',
+        quantity: 1,
+        position: '-',
+        children: [
+          { code: 'C-1110', name: '齿轮', quantity: 4, position: 'G1' },
+          { code: 'C-1120', name: '轴承', quantity: 2, position: 'B1-B2' }
+        ]
+      },
+      {
+        code: 'B-1200',
+        name: '控制系统',
+        quantity: 1,
+        position: '-',
+        children: [
+          { code: 'C-1210', name: '电机', quantity: 1, position: 'M1' },
+          { code: 'C-1220', name: '传感器', quantity: 3, position: 'S1-S3' }
+        ]
+      }
+    ]
+  }
+])
+
+// ---------- 计算属性：树数据 ----------
+const bomTree = computed(() => bomItems.value)
+
+// ---------- 弹窗控制变量 ----------
+const addPartDialogVisible = ref(false)
+const bomDialogVisible = ref(false)
+const parentDialogVisible = ref(false)
+
+
+// ---------- 监听主弹窗显隐 ----------
+watch(
+  () => props.visible,
+  (newVal) => {
+    dialogVisible.value = newVal
+    if (newVal) {
+      Object.assign(formData, props.rowData)
+      bomItems.value = props.rowData?.bomItems ? [...props.rowData.bomItems] : []
+    }
+  }
+)
+
+// ---------- 表格行变化回调 ----------
+const onBomChange = (row) => {
+  console.log('BOM 行已更新', row)
+}
+
+// ---------- 工具栏按钮 ----------
+const showAddPartDialog = () => {
+  addPartDialogVisible.value = true
+}
+const showBomDialog = () => {
+  bomDialogVisible.value = true
+}
+const showParentDialog = () => {
+  parentDialogVisible.value = true
+}
+
+// ---------- BOM 子项增/删 ----------
+const addParts = (items) => {
+  bomItems.value.push(...items)
+}
+const removeBomItem = (index) => {
+  bomItems.value.splice(index, 1)
+}
+
+// ---------- 主弹窗操作 ----------
 const handleClose = () => {
   emit('update:visible', false)
 }
-
-// 保存数据
 const handleSave = () => {
+  emit('save', { ...formData, bomItems: bomItems.value })
   handleClose()
 }
 </script>
@@ -242,12 +359,40 @@ const handleSave = () => {
   justify-content: flex-end;
   gap: 10px;
 }
-
 .el-form {
   padding: 20px;
 }
-
 .el-tabs {
   margin-bottom: 20px;
 }
-</style> 
+.bom-toolbar {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 10px;
+}
+.tree-header,
+.bom-tree .el-tree-node__content {
+  display: flex;
+  align-items: center;
+  line-height: 28px;
+}
+.col-code {
+  width: 160px;
+}
+.col-name {
+  flex: 1;
+}
+.col-qty {
+  width: 80px;
+  text-align: right;
+}
+.col-pos {
+  width: 120px;
+}
+.tree-header {
+  font-weight: 600;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--el-border-color-light, #ebeef5);
+}
+</style>
+
