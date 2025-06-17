@@ -392,13 +392,6 @@ public class CategoryServiceImpl implements CategoryService {
 
         HttpClientUtil.HttpResponse response = HttpClientUtil.doPost4JsonWithHeaders(url, requestBody, headers);
 
-        // 1. 将响应体解析为JSON对象
-        JSONObject responseJson = JSON.parseObject(response.getBody());
-
-        // 2. 获取第一个字段的值
-        String firstFieldName = responseJson.keySet().iterator().next();
-        Object firstFieldValue = responseJson.get(firstFieldName);
-
 
         return;
 
