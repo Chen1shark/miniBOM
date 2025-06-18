@@ -1,19 +1,14 @@
 package com.idme.controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.huawei.innovation.rdm.xdm.dto.relation.EXADefinitionLinkViewDTO;
 import com.idme.pojo.dto.AttributeIdDto;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
-import com.idme.pojo.vo.DeleteRequest;
 import com.idme.result.PageResult;
 import com.idme.result.Result;
 import com.idme.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -140,6 +135,11 @@ public class CategoryController {
         return categoryService.queryAttribute(linkId);
     }
 
+    /**
+     * 删除分类下属性
+     * @param attributeIdDto
+     * @return
+     */
     @DeleteMapping("/deleteAttribute")
     public Result deleteAttribute(@RequestBody AttributeIdDto attributeIdDto){
 
