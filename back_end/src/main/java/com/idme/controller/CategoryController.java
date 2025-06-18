@@ -89,6 +89,7 @@ public class CategoryController {
                 .pageSize(queryDto.getPageSize())
                 .name(queryDto.getName())
                 .code(queryDto.getCode())
+                .id(queryDto.getId())
                 .build();
         PageResult result = categoryService.queryCategories(queryDto);
         return Result.success(result);

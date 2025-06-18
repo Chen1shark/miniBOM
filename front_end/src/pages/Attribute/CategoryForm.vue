@@ -57,11 +57,11 @@
           </el-form-item>
         </el-collapse-item>
 
-        <!-- 分类属性信息 -->
-        <el-collapse-item title="分类属性信息" name="attributes">
+        <!-- 分类属性信息 - 只在编辑模式下显示 -->
+        <el-collapse-item v-if="mode === 'edit'" title="分类属性信息" name="attributes">
           <div class="attribute-actions">
-            <el-button type="primary" @click="addAttribute">添加属性</el-button>
-            <el-button type="danger" @click="removeSelectedAttributes">删除选中属性</el-button>
+          <el-button type="primary" @click="addAttribute">添加属性</el-button>
+          <el-button type="danger" @click="removeSelectedAttributes">删除选中属性</el-button>
           </div>
           
           <!-- 属性列表 -->
@@ -71,14 +71,14 @@
             @selection-change="handleAttributeTableSelectionChange"
             v-loading="loading"
           >
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="nameZh" label="属性中文名称" />
-            <el-table-column prop="nameEn" label="属性英文名称" />
-            <el-table-column prop="dataType" label="数据类型" />
+             <el-table-column type="selection" width="55" />
+             <el-table-column prop="nameZh" label="属性中文名称" />
+             <el-table-column prop="nameEn" label="属性英文名称" />
+             <el-table-column prop="dataType" label="数据类型" />
             <el-table-column prop="description" label="中文描述" show-overflow-tooltip />
             <el-table-column prop="descriptionEn" label="英文描述" show-overflow-tooltip />
-            <el-table-column label="操作">
-              <template #default="scope">
+             <el-table-column label="操作">
+                <template #default="scope">
                 <el-button 
                   type="danger" 
                   size="small" 
@@ -87,8 +87,8 @@
                 >
                   删除
                 </el-button>
-              </template>
-            </el-table-column>
+                </template>
+             </el-table-column>
           </el-table>
         </el-collapse-item>
       </el-collapse>
@@ -100,8 +100,9 @@
     </template>
   </el-dialog>
 
-  <!-- 属性选择对话框 -->
+  <!-- 属性选择对话框 - 只在编辑模式下显示 -->
   <attribute-selection-dialog 
+    v-if="mode === 'edit'"
     :visible="showAttributeSelection" 
     :attribute-list="attributeList"
     @close="showAttributeSelection = false" 
@@ -147,7 +148,7 @@ const formData = ref({
   attributes: []
 });
 
-const activeNames = ref(['basic', 'attributes']); // 默认展开基本信息和属性信息
+const activeNames = ref(['basic']); // 默认只展开基本信息
 // 新增：控制属性选择对话框显示
 const showAttributeSelection = ref(false);
 // 新增：属性表格选中项
@@ -199,13 +200,22 @@ watch(() => props.initData, (newVal) => {
   if (newVal) {
     formData.value = { 
       ...newVal,
-      attributes: [] // 初始化为空数组
+      attributes: []
     };
-    // 如果是编辑模式，加载分类属性
-    if (props.mode === 'edit' && newVal.id) {
-      console.log('开始加载分类属性，分类ID:', newVal.id); // 添加日志
+    // 如果是编辑模式，加载分类属性并展开属性面板
+    if (props.mode === 'edit') {
       loadCategoryAttributes(newVal.id);
+      activeNames.value = ['basic', 'attributes'];
     }
+  }
+}, { immediate: true });
+
+// 监听模式变化
+watch(() => props.mode, (newMode) => {
+  if (newMode === 'edit') {
+    activeNames.value = ['basic', 'attributes'];
+  } else {
+    activeNames.value = ['basic'];
   }
 }, { immediate: true });
 
@@ -245,7 +255,7 @@ const handleSubmit = async () => {
 
         if (res.code === 1) {
           ElMessage.success(props.mode === 'create' ? '创建成功' : '更新成功');
-          emit('submit', formData.value);
+  emit('submit', formData.value);
         } else {
           ElMessage.error(res.msg || (props.mode === 'create' ? '创建失败' : '更新失败'));
         }
@@ -289,6 +299,12 @@ const handleAttributeSearch = (keyword) => {
 
 // 添加属性按钮点击事件
 const addAttribute = async () => {
+  // 只在编辑模式下允许添加属性
+  if (props.mode !== 'edit') {
+    ElMessage.warning('新建模式下不能添加属性');
+    return;
+  }
+  
   try {
     loading.value = true;
     // 加载所有属性
@@ -376,7 +392,7 @@ const searchParentCategories = async (query) => {
   if (query) {
     loading.value = true;
     try {
-      const res = await apiCateGet(1, 20, query, '');
+      const res = await apiCateGet(1, 20, query, '', '');
       if (res.code === 1) {
         parentOptions.value = res.data.records;
       } else {

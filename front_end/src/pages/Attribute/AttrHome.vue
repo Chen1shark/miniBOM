@@ -195,7 +195,7 @@ const categoryTotal = ref(0)
 const fetchCategoryList = async () => {
   loading.value = true
   try {
-    const res = await apiCateGet(categoryPage.value, categoryPageSize.value, search.value.trim(), '')
+    const res = await apiCateGet(categoryPage.value, categoryPageSize.value, search.value.trim(), '', '')
     if (res.code === 1) {
       categoryList.value = res.data.records.map(item => ({
         categoryCode: item.code,
