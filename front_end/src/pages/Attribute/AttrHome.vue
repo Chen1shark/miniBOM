@@ -53,8 +53,8 @@
           </template>
         </el-table-column>
         <el-table-column prop="categoryNameEn" label="分类英文名称" width="200" />
-        <el-table-column prop="parentCategoryNameZh" label="父分类中文名称" width="200" />
-        <el-table-column prop="parentCategoryNameEn" label="父分类英文名称" width="200" />
+        <el-table-column prop="parentCategoryNameZh" label="分类中文描述" width="200" />
+        <el-table-column prop="parentCategoryNameEn" label="分类英文描述" width="200" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
             <el-button size="small" type="primary" @click="openCategoryEdit(scope.row)">编辑</el-button>

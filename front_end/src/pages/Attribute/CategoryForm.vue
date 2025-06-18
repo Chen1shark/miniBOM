@@ -13,8 +13,21 @@
           <el-form-item label="分类英文名称" prop="nameEn">
             <el-input v-model="formData.nameEn"></el-input>
           </el-form-item>
-          <el-form-item label="分类描述" prop="description">
-            <el-input v-model="formData.description" type="textarea"></el-input>
+          <el-form-item label="中文描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入中文描述"
+            />
+          </el-form-item>
+          <el-form-item label="英文描述" prop="descriptionEn">
+            <el-input
+              v-model="formData.descriptionEn"
+              type="textarea"
+              :rows="3"
+              placeholder="请输入英文描述"
+            />
           </el-form-item>
           <el-form-item label="分类状态" required>
             <el-select v-model="formData.status" placeholder="请选择分类状态">
