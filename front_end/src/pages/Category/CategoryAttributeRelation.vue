@@ -8,6 +8,18 @@
 
       <!-- 动态生成分类列 -->
       <el-table-column v-for="category in categories" :key="category.categoryCode" :label="category.categoryCode + ' ' + category.categoryNameZh" width="100" align="center">
+        <template #header>
+          <div class="category-header">
+            <span 
+              class="category-code-link" 
+              @click="handleCategoryClick(category)"
+              :title="category.categoryCode"
+            >
+              {{ category.categoryCode }}
+            </span>
+            <span class="category-name">{{ category.categoryNameZh }}</span>
+          </div>
+        </template>
         <template #default="scope">
           <!-- 使用勾选框表示关联关系 -->
           <el-checkbox :model-value="isAttributeRelatedToCategory(scope.row, category)" disabled></el-checkbox>
@@ -20,6 +32,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const props = defineProps({
   attributeRelationData: { // 属性与分类关系数据
@@ -146,6 +161,15 @@ const isAttributeRelatedToCategory = (attribute, category) => {
   return attribute.relatedCategoryCodes.includes(category.categoryCode);
 };
 
+// 处理分类码点击事件
+const handleCategoryClick = (category) => {
+  console.log('Category clicked:', category);
+  if (category.categoryCode) {
+    // 跳转到分类详情页面
+    router.push(`/Home/category/detail/${category.categoryCode}`);
+  }
+};
+
 // 移除 onMounted 钩子
 // onMounted(() => {
 //   fetchRelationData();
@@ -186,5 +210,30 @@ const isAttributeRelatedToCategory = (attribute, category) => {
 /* 固定左侧列 */
 .el-table .el-table__fixed {
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-code-link {
+  cursor: pointer;
+  color: #409eff;
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.category-code-link:hover {
+  color: #66b1ff;
+}
+
+.category-name {
+  font-size: 12px;
+  color: #606266;
+  text-align: center;
+  word-break: break-all;
 }
 </style> 
