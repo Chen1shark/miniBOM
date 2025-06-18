@@ -1,6 +1,6 @@
 <template>
   <div class="category-detail-container">
-    <el-card class="detail-card">
+    <el-card class="detail-card" v-loading="loading">
       <template #header>
         <div class="card-header">
           <span>分类详情</span>
@@ -18,31 +18,31 @@
               <el-input v-model="categoryData.categoryNameZh"></el-input>
             </el-form-item>
             <el-form-item label="中文描述">
-              <el-input v-model="categoryData.description"></el-input>
+              <el-input v-model="categoryData.description" type="textarea"></el-input>
             </el-form-item>
-            <el-form-item label="分类父节点">
-              <el-input v-model="categoryData.parentCategoryName"></el-input>
-            </el-form-item>
-            <el-form-item label="部件类型">
-              <el-input v-model="categoryData.partType"></el-input>
-            </el-form-item>
-            <el-form-item label="分类名是否合成部件描述">
-               <el-input v-model="categoryData.isSyntheticDescription"></el-input>
-            </el-form-item>
-             <el-form-item label="英文名称">
+            <el-form-item label="英文名称">
               <el-input v-model="categoryData.categoryNameEn"></el-input>
             </el-form-item>
-             <el-form-item label="英文描述">
-              <el-input v-model="categoryData.descriptionEn"></el-input>
+            <el-form-item label="英文描述">
+              <el-input v-model="categoryData.descriptionEn" type="textarea"></el-input>
             </el-form-item>
-            <el-form-item label="是否MDA结构件小类">
-               <el-input v-model="categoryData.isMdaStructure"></el-input>
+            <el-form-item label="分类状态">
+              <el-input v-model="categoryData.isSyntheticDescription"></el-input>
             </el-form-item>
-             <el-form-item label="默认部件类型">
-               <el-input v-model="categoryData.defaultPartType"></el-input>
+            <el-form-item label="父分类码">
+              <el-input v-model="categoryData.parentCategoryCode"></el-input>
             </el-form-item>
-             <el-form-item label="参考备注">
-               <el-input v-model="categoryData.remarks" type="textarea"></el-input>
+            <el-form-item label="父分类名称">
+              <el-input v-model="categoryData.parentCategoryName"></el-input>
+            </el-form-item>
+            <el-form-item label="父分类中文描述">
+              <el-input v-model="categoryData.parentCategoryDescription" type="textarea"></el-input>
+            </el-form-item>
+            <el-form-item label="父分类英文描述">
+              <el-input v-model="categoryData.parentCategoryDescriptionEn" type="textarea"></el-input>
+            </el-form-item>
+            <el-form-item label="父分类状态">
+              <el-input v-model="categoryData.parentCategoryStatus"></el-input>
             </el-form-item>
           </el-form>
         </el-collapse-item>
@@ -70,84 +70,129 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { apiCateGet } from '@/api/CateGet';
 
 const route = useRoute();
 const router = useRouter();
 
-const categoryData = ref({});
+const categoryData = ref({
+  categoryCode: '',
+  categoryNameZh: '',
+  categoryNameEn: '',
+  description: '',
+  descriptionEn: '',
+  parentCategoryName: '',
+  parentCategoryCode: '',
+  parentCategoryDescription: '',
+  parentCategoryDescriptionEn: '',
+  parentCategoryStatus: '',
+  isSyntheticDescription: '',
+  attributes: []
+});
 const activeNames = ref(['basic', 'attributes']); // 默认展开所有部分
+const loading = ref(false);
 
-const fetchCategoryDetail = (id) => {
-  // TODO: 调用接口根据ID获取分类详情数据
-  console.log('Fetching category detail for ID:', id);
-  // 模拟数据
-  categoryData.value = {
-    categoryCode: '0301',
-    categoryNameZh: '印制板',
-    description: '印制板描述',
-    parentCategoryName: '电子元器件-印制电路、集成电路和微型组装件-印制电路',
-    partType: '单板/整件/邮件/母板/整机(模型清单)/采购件',
-    isSyntheticDescription: '是',
-    categoryNameEn: 'PCB',
-    descriptionEn: 'PCB description',
-    isMdaStructure: '否',
-    defaultPartType: '单板',
-    remarks: '参考备注内容',
-    attributes: [
-      {
-        serialNumber: 10,
-        nameZh: '小类代码',
-        nameEn: 'Category_Code',
-        descriptionZh: '',
-        dataType: '字符串定义',
-        unit: '',
-        allowedValues: '',
-        defaultValue: '0301',
-        isRequired: '是',
-        isSyntheticDescription: '是',
-        isMultipleValues: '否',
-      },
-       {
-        serialNumber: 20,
-        nameZh: '机型',
-        nameEn: 'Equipment_Type',
-        descriptionZh: '',
-        dataType: '字符串定义',
-        unit: '',
-        allowedValues: '',
-        defaultValue: 'Default',
-        isRequired: '是',
-        isSyntheticDescription: '是',
-        isMultipleValues: '否',
-      },
-       {
-        serialNumber: 30,
-        nameZh: 'PART类型',
-        nameEn: 'Part_Type',
-        descriptionZh: '',
-        dataType: '字符串定义',
-        unit: '',
-        allowedValues: '单板整件/部件母板整...',
-        defaultValue: '单核',
-        isRequired: '是',
-        isSyntheticDescription: '是',
-        isMultipleValues: '否',
-      },
-        {
-        serialNumber: 40,
-        nameZh: '板类型',
-        nameEn: 'Board_Type',
-        descriptionZh: '',
-        dataType: '字符串定义',
-        unit: '',
-        allowedValues: 'TRX单板背板电源单...',
-        defaultValue: '数字板',
-        isRequired: '是',
-        isSyntheticDescription: '是',
-        isMultipleValues: '否',
-      },
-    ]
-  };
+// 根据ID查询分类详情
+const fetchCategoryById = async (id) => {
+  try {
+    console.log('fetchCategoryById 接收到的 id:', id, '类型:', typeof id);
+    
+    if (!id || id === 'undefined' || id === 'null') {
+      console.log('ID 无效，跳过查询');
+      return null;
+    }
+    
+    // 只传id参数，其他参数传空字符串
+    const response = await apiCateGet(1, 10, '', '', BigInt(id).toString());
+    
+    if (response && response.code === 1 && response.data && response.data.records && response.data.records.length > 0) {
+      return response.data.records[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('根据ID查询分类失败:', error);
+    return null;
+  }
+};
+
+// 查询父分类信息
+const fetchParentCategory = async (parentId) => {
+  console.log('fetchParentCategory 接收到的 parentId:', parentId, '类型:', typeof parentId);
+  
+  if (!parentId || parentId === 'undefined' || parentId === 'null') {
+    console.log('parentId 无效，跳过父分类查询');
+    return null;
+  }
+  
+  try {
+    console.log('查询父分类，parentId:', parentId);
+    const parentCategory = await fetchCategoryById(parentId);
+    if (parentCategory) {
+      console.log('父分类信息:', parentCategory);
+      return {
+        name: parentCategory.name || '',
+        code: parentCategory.code || '',
+        description: parentCategory.description || '',
+        descriptionEn: parentCategory.descriptionEn || '',
+        status: parentCategory.status ? '有效' : '失效'
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('查询父分类失败:', error);
+    return null;
+  }
+};
+
+const fetchCategoryDetail = async (code) => {
+  try {
+    loading.value = true;
+    console.log('Fetching category detail for code:', code);
+    
+    // 第一次：使用CateGet接口根据分类码查询分类信息（只传code）
+    const response = await apiCateGet(1, 10, '', code, '');
+    
+    if (response && response.code === 1 && response.data && response.data.records && response.data.records.length > 0) {
+      const category = response.data.records[0]; // 获取第一个匹配的分类
+      console.log('获取到的分类信息:', category);
+      console.log('分类的 parentId:', category.parentId, '类型:', typeof category.parentId);
+      
+      // 第二次：查询父分类信息（只传id）
+      let parentInfo = null;
+      if (category.parentId) {
+        parentInfo = await fetchParentCategory(category.parentId);
+      } else {
+        console.log('分类没有父分类（parentId 为空）');
+      }
+      
+      // 映射数据到表单
+      categoryData.value = {
+        categoryCode: category.code || '',
+        categoryNameZh: category.name || '',
+        categoryNameEn: category.nameEn || '',
+        description: category.description || '',
+        descriptionEn: category.descriptionEn || '',
+        parentCategoryName: parentInfo ? parentInfo.name : '',
+        parentCategoryCode: parentInfo ? parentInfo.code : '',
+        parentCategoryDescription: parentInfo ? parentInfo.description : '',
+        parentCategoryDescriptionEn: parentInfo ? parentInfo.descriptionEn : '',
+        parentCategoryStatus: parentInfo ? parentInfo.status : '',
+        isSyntheticDescription: category.status ? '有效' : '失效',
+        attributes: category.extAttrs || []
+      };
+      
+      console.log('Category data loaded:', categoryData.value);
+    } else {
+      ElMessage.error('未找到对应的分类信息');
+      console.error('No category found for code:', code);
+    }
+  } catch (error) {
+    console.error('获取分类详情失败:', error);
+    ElMessage.error('获取分类详情失败');
+  } finally {
+    loading.value = false;
+  }
 };
 
 const goBack = () => {
@@ -155,9 +200,11 @@ const goBack = () => {
 };
 
 onMounted(() => {
-  const categoryId = route.params.id;
-  if (categoryId) {
-    fetchCategoryDetail(categoryId);
+  const categoryCode = route.params.id;
+  if (categoryCode) {
+    fetchCategoryDetail(categoryCode);
+  } else {
+    ElMessage.error('分类码不能为空');
   }
 });
 </script>

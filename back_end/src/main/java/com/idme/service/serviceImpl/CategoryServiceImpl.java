@@ -67,6 +67,10 @@ public class CategoryServiceImpl implements CategoryService {
         rdmPageVO.setCurPage(queryDto.getCurPage() != null ? queryDto.getCurPage() : 1);
         rdmPageVO.setPageSize(queryDto.getPageSize() != null ? queryDto.getPageSize() : 10);
 
+        if(queryDto.getId()!=null){
+            queryRequestVo.addCondition("id", ConditionType.EQUAL, queryDto.getId());
+        }
+
         // 添加分类编码查询条件（精确匹配）
         if (StringUtils.hasText(queryDto.getCode())) {
             queryRequestVo.addCondition("businessCode", ConditionType.EQUAL, queryDto.getCode());

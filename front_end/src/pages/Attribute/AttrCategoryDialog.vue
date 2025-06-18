@@ -6,8 +6,8 @@
       <el-table-column prop="categoryCode" label="分类号" />
       <el-table-column prop="categoryNameZh" label="分类中文名" />
       <el-table-column prop="categoryNameEn" label="分类英文名" />
-      <el-table-column prop="parentCategoryNameZh" label="分类中文父类名" />
-      <el-table-column prop="parentCategoryNameEn" label="分类英文父类名" />
+      <el-table-column prop="parentCategoryNameZh" label="分类中文描述" />
+      <el-table-column prop="parentCategoryNameEn" label="分类英文描述" />
     </el-table>
       </el-tab-pane>
       <el-tab-pane label="属性信息" name="attributes">
