@@ -1,8 +1,6 @@
 package com.idme.controller;
 
-import com.huawei.innovation.rdm.minibom.dto.entity.PartCreateDTO;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartQueryViewDTO;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartViewDTO;
+import com.idme.pojo.vo.PartVO;
 import com.idme.result.Result;
 import com.idme.service.PartService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,9 +30,9 @@ public class PartController {
         return Result.success(partId);
     }
 
-    @GetMapping("/query")
-    public Result query(){
-        List<PartQueryViewDTO> view = partService.query();
+    @GetMapping({"/{pageSize}/{curPage}/{searchType}/{searchText}","/{pageSize}/{curPage}"})
+    public Result query(@PathVariable(required = false) String searchType, @PathVariable(required = false) String searchText, @PathVariable Integer pageSize, @PathVariable Integer curPage){
+        List<PartVO> view = partService.query(searchType, searchText, pageSize, curPage);
         return Result.success(view);
     }
 }

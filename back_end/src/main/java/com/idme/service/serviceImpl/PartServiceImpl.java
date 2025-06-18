@@ -1,30 +1,24 @@
 package com.idme.service.serviceImpl;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.huawei.innovation.rdm.coresdk.basic.enums.ConditionType;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestVo;
 import com.huawei.innovation.rdm.coresdk.basic.vo.RDMPageVO;
 import com.huawei.innovation.rdm.coresdk.extattrmgmt.dto.EXAValueParamDTO;
+import com.huawei.innovation.rdm.coresdk.extattrmgmt.dto.EXAValueViewDTO;
 import com.huawei.innovation.rdm.minibom.delegator.PartDelegator;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartBranchCreateDTO;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartCreateDTO;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartMasterCreateDTO;
-import com.huawei.innovation.rdm.minibom.dto.entity.PartQueryViewDTO;
-import com.huawei.innovation.rdm.xdm.bean.entity.ClassificationNode;
+import com.huawei.innovation.rdm.minibom.dto.entity.*;
 import com.huawei.innovation.rdm.xdm.delegator.ClassificationNodeDelegator;
-import com.huawei.innovation.rdm.xdm.dto.entity.ClassificationNodeViewDTO;
-import com.idme.pojo.dto.CategoryCreateDto;
-import com.idme.pojo.dto.CategoryQueryDto;
+import com.idme.constant.AttributeConstant;
 import com.idme.pojo.dto.PartBuildDto;
-import com.idme.service.CategoryService;
+import com.idme.pojo.vo.PartVO;
 import com.idme.service.PartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,9 +68,39 @@ public class PartServiceImpl implements PartService {
      * 查询
      * @return
      */
-    public List<PartQueryViewDTO> query() {
+    public List<PartVO> query(String searchType, String searchText, Integer pageSize, Integer curPage) {
+        //获取原始Part数据
         QueryRequestVo queryRequestVo = new QueryRequestVo();
+        if (StringUtils.hasText(searchText)) {
+            if(searchType.equals("name")){
+                queryRequestVo.addCondition(AttributeConstant.NAME, ConditionType.LIKE, searchText);
+            } else if (searchType.equals("id")) {
+                queryRequestVo.addCondition(AttributeConstant.ID, ConditionType.EQUAL, searchText);
+            }
+        }
         RDMPageVO rdmPageVO = new RDMPageVO();
-        return partDelegator.query(queryRequestVo, rdmPageVO);
+        rdmPageVO.setCurPage(curPage);
+        rdmPageVO.setPageSize(pageSize);
+        List<PartViewDTO> partViewDTOs = partDelegator.find(queryRequestVo, rdmPageVO);
+
+        //转化为PartVO
+        List<PartVO> partVOS = new ArrayList<>();
+        for(PartViewDTO dto : partViewDTOs){
+            PartVO item = new PartVO();
+            item.setPartId(dto.getId());
+            item.setName(dto.getName());
+            item.setVersion(dto.getVersion());
+            item.setPartType(dto.getPartType());
+
+            Object rawValue = dto.getExtAttrs().get(1).getValue();
+            if (!(rawValue instanceof Map)) {
+                rawValue = dto.getExtAttrs().get(0).getValue();
+            }
+            item.setBusinessCode((String) ((Map<String, Object>) rawValue).get("businessCode"));
+
+            partVOS.add(item);
+        }
+
+        return partVOS;
     }
 }

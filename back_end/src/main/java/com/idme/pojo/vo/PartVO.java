@@ -19,5 +19,5 @@ public class PartVO {
 
     private AssemblyMode partType; //装配模式
 
-    private String CategoryCode; //分类编码
+    private String businessCode; //分类编码
 }

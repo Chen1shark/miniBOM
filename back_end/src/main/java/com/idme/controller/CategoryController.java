@@ -6,7 +6,6 @@ import com.idme.pojo.dto.AttributeIdDto;
 import com.idme.pojo.dto.CategoryQueryDto;
 import com.idme.pojo.dto.CategoryUpdateDto;
 import com.idme.pojo.vo.AttributeVO;
-import com.idme.pojo.vo.DeleteRequest;
 import com.idme.result.PageResult;
 import com.idme.result.Result;
 import com.idme.service.CategoryService;
