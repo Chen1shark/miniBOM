@@ -15,7 +15,7 @@
       <button @click="$router.push('/Home/category/edit')">✏️ 修改分类模板</button>
       <button @click="$router.push('/Home/category/generate')">📎 作成分类模板</button>
       <button @click="$router.push('/Home/category/query-one')">🔍 查询单个分类</button>
-      <button @click="$router.push('/Home/category/query-all')">📚 查询所有分类</button>
+      <button @click="$emit('showCategoryTree')">📚 查看分类树</button>
     </div>
 
     <div class="menu-group">
