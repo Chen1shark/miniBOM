@@ -11,20 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartVO {
+public class PartVersionVO {
     private Long partId; //部件编码
 
     private String name; //部件名称
 
     private String version; //版本号
 
-    private AssemblyMode partType; //装配模式
-
-    private PartSource source; //来源
-
-    private String businessCode; //分类编码
-
-    private Long partMasterId;
-
-    private Long parBranchId;
+    private boolean latestIteration; //是否最新版本
 }

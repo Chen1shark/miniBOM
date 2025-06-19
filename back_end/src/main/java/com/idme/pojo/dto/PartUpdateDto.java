@@ -1,5 +1,6 @@
 package com.idme.pojo.dto;
 
+
 import com.huawei.innovation.rdm.minibom.bean.enumerate.AssemblyMode;
 import com.huawei.innovation.rdm.minibom.bean.enumerate.PartSource;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,8 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartBuildDto {
+public class PartUpdateDto {
+    private Long MasterId; //部件主对象id
 
     private String name;        // 部件名称
 
