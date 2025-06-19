@@ -4,21 +4,83 @@
       <Topbar />
     </div>
     <div class="body">
-      <SidebarMenu />
+      <SidebarMenu @showCategoryTree="drawerVisible = true" />
       <div class="main-content">
         <div class="content-box">
           <h1 v-if="!$route.matched.length">欢迎使用 miniBOM 系统</h1>
           <router-view />
         </div>
       </div>
+      <!-- 分类树抽屉 -->
+      <el-drawer
+        v-model="drawerVisible"
+        title="分类树"
+        direction="ltr"
+        size="400px"
+        :with-header="true"
+        :close-on-click-modal="true"
+        @open="fetchCategoryTreeData"
+      >
+        <CategoryTreeView :treeData="categoryTreeData" />
+      </el-drawer>
     </div>
   </div>
 </template>
 
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import SidebarMenu from '../components/SidebarMenu.vue'
-import Topbar from '../components/Topbar.vue' 
+import Topbar from '../components/Topbar.vue'
+import CategoryTreeView from '@/pages/Category/CategoryTreeView.vue'
+import { ElMessage } from 'element-plus'
+import { apiCateGet } from '@/api/CateGet'
+
+const drawerVisible = ref(false)
+const categoryTreeData = ref([])
+
+// 构建分类树状结构
+const buildCategoryTree = (categories) => {
+  const categoryMap = new Map()
+  const rootCategories = []
+  categories.forEach(category => {
+    categoryMap.set(category.id, {
+      id: category.id,
+      categoryCode: category.code,
+      categoryNameZh: category.name,
+      categoryNameEn: category.nameEn,
+      children: []
+    })
+  })
+  categories.forEach(category => {
+    const node = categoryMap.get(category.id)
+    if (category.parentId && categoryMap.has(category.parentId)) {
+      const parent = categoryMap.get(category.parentId)
+      parent.children.push(node)
+    } else {
+      rootCategories.push(node)
+    }
+  })
+  return rootCategories
+}
+
+const fetchCategoryTreeData = async () => {
+  try {
+    // 获取所有分类数据
+    const response = await apiCateGet(1, 1000, '', '', '')
+    if (response && response.code === 1 && response.data && response.data.records) {
+      categoryTreeData.value = buildCategoryTree(response.data.records)
+    } else {
+      ElMessage.error('获取分类树数据失败')
+    }
+  } catch (error) {
+    ElMessage.error('获取分类树数据失败')
+  }
+}
+
+onMounted(() => {
+  fetchCategoryTreeData()
+})
 </script>
 
 <style scoped>
