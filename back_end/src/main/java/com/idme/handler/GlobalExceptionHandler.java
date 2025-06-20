@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
      * @return
      */
     @ExceptionHandler
-    public Result exceptionHandler(RuntimeException ex){
+    public Result exceptionHandler(BaseException ex){
         return Result.error(ex.getMessage());
     }
 
