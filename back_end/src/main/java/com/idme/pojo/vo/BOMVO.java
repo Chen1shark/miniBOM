@@ -11,7 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PartVO {
+public class BOMVO {
+    private Long bomLinkId;//BOMLink的id
+
+    private String referenceDesignator;//位号
+
     private Long partId; //部件编码
 
     private String name; //部件名称
@@ -27,5 +31,4 @@ public class PartVO {
     private Long partMasterId;
 
     private Long parBranchId;
-
 }

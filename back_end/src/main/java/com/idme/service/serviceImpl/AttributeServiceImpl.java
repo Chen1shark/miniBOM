@@ -56,6 +56,7 @@ public class AttributeServiceImpl implements AttributeService {
      * @return
      */
     public List<EXADefinitionViewDTO> getById(Long id) {
+
         QueryRequestVo queryRequestVo = new QueryRequestVo();
         RDMPageVO rdmPageVO=new RDMPageVO();
 
@@ -64,6 +65,7 @@ public class AttributeServiceImpl implements AttributeService {
         rdmPageVO.setCurPage(1);
         rdmPageVO.setPageSize(1);
         List<EXADefinitionViewDTO> exaDefinitionViewDTOS = exaDefinitionDelegator.find(queryRequestVo, rdmPageVO);
+
 
         if(exaDefinitionViewDTOS == null){
             throw new AttributeNotFoundException(MessageConstant.ATTRIBUTE_NOT_FOUND);
