@@ -153,6 +153,8 @@
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
 import AddPartDialog from './AddPartDialog.vue'
+import { useUpdatePart } from '@/hooks/usePartApi'
+import { ElMessage } from 'element-plus'
 
 // ---------- props & emit ----------
 const props = defineProps({
@@ -173,6 +175,7 @@ const activeTab = ref('basic')
 
 // ---------- 基础表单 ----------
 const formData = reactive({
+  masterId: '',
   partNumber: '',
   partName: '',
   defaultUnit: 'PCS',
@@ -313,7 +316,19 @@ watch(
   (newVal) => {
     dialogVisible.value = newVal
     if (newVal) {
-      Object.assign(formData, props.rowData)
+      // 先重置
+      Object.keys(formData).forEach(key => {
+        formData[key] = '' // 或初始值
+      })
+      formData.quantity = 1 // 例如初始值
+      formData.defaultUnit = 'PCS'
+      // 再填充
+      Object.keys(formData).forEach(key => {
+        if (props.rowData && props.rowData[key] !== undefined) {
+          formData[key] = props.rowData[key]
+        }
+      })
+      
       bomItems.value = props.rowData?.bomItems ? [...props.rowData.bomItems] : []
     }
   }
@@ -343,13 +358,36 @@ const removeBomItem = (index) => {
   bomItems.value.splice(index, 1)
 }
 
+// ---------- API hook ----------
+const { execute: updatePart, loading } = useUpdatePart()
+
 // ---------- 主弹窗操作 ----------
 const handleClose = () => {
   emit('update:visible', false)
 }
-const handleSave = () => {
-  emit('save', { ...formData, bomItems: bomItems.value })
-  handleClose()
+const handleSave = async () => {
+  try {
+    await updatePart({
+      masterId: formData.masterId,
+      name: formData.partName,
+      number: formData.partNumber || '',
+      source: formData.source,
+      partType: formData.assemblyMode,
+      categoryId: formData.categoryCode,
+      clsAttrs: {
+        height: formData.height,
+        Brand: formData.width, // 可根据实际表单补充
+        Weight: formData.weight,
+        Size: '0', // 可根据实际表单补充
+        Number: '0' // 可根据实际表单补充
+      }
+    })
+    ElMessage.success('编辑成功')
+    emit('save')
+    handleClose()
+  } catch (e) {
+    ElMessage.error('编辑失败')
+  }
 }
 </script>
 

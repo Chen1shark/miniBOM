@@ -33,12 +33,12 @@
 
       <!-- 表格区域 -->
       <el-table :data="paginatedData" stripe height="700">
-        <el-table-column fixed prop="id" label=" "/>
-        <el-table-column prop="partCode" label="部件编码"/>
-        <el-table-column prop="partName" label="部件名"/>
+        <!-- <el-table-column fixed prop="id" label=" "/> -->
+        <el-table-column prop="partId" label="部件编码"/>
+        <el-table-column prop="name" label="部件名"/>
         <el-table-column prop="version" label="版本号"/>
-        <el-table-column prop="categoryCode" label="装配模式"/>
-        <el-table-column prop="source" label="分类码"/>
+        <el-table-column prop="partType" label="装配模式"/>
+        <el-table-column prop="businessCode" label="分类码"/>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row)">
@@ -82,9 +82,10 @@
   <script setup>
   import { onMounted, ref, reactive, computed } from 'vue'
   import { Edit, DeleteFilled, Plus, Search } from '@element-plus/icons-vue'
-  import { getAllParts } from '@/mock/partBom'
+  import { useGetAllParts, useDeletePart } from '@/hooks/usePartApi'
   import EditDialog from './Editdialog.vue'
   import AddDialog from './AddDialog.vue'
+  import { ElMessage, ElMessageBox } from 'element-plus'
 
   // 分页相关数据
   const currentPage = ref(1)
@@ -124,21 +125,24 @@
     }
   }
 
+  // API hooks
+  const { parts, loading, error, fetchParts } = useGetAllParts()
+  const { execute: deletePart, loading: deleteLoading } = useDeletePart()
+
+  // 本地分页和搜索数据
   const tdForPart = ref([])
   const originalData = ref([])
 
   // 初始化数据
+  const refreshList = async () => {
+    await fetchParts()
+    originalData.value = parts.value ? [...parts.value] : []
+    tdForPart.value = parts.value ? [...parts.value] : []
+    total.value = tdForPart.value.length
+  }
+
   onMounted(async () => {
-    try {
-      const response = await getAllParts()
-      if (response.code === 200) {
-        originalData.value = response.data
-        tdForPart.value = [...response.data]
-        total.value = response.data.length
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error)
-    }
+    await refreshList()
   })
 
   // 计算当前页显示的数据
@@ -163,8 +167,8 @@
 
     // 根据搜索条件过滤数据
     const filteredData = originalData.value.filter(item => {
-      const matchPartCode = !partCode || item.partCode.toLowerCase().includes(partCode.toLowerCase())
-      const matchPartName = !partName || item.partName.toLowerCase().includes(partName.toLowerCase())
+      const matchPartCode = !partCode || (item.partCode && item.partCode.toLowerCase().includes(partCode.toLowerCase()))
+      const matchPartName = !partName || (item.partName && item.partName.toLowerCase().includes(partName.toLowerCase()))
       return matchPartCode && matchPartName
     })
 
@@ -188,7 +192,7 @@
   // 添加方法
   const handleAdd = () => {
     addDialogVisible.value = true
-  };
+  }
 
   // 编辑方法
   const handleEdit = (row) => {
@@ -196,18 +200,28 @@
     
     currentRow.value = {...row}
     dialogVisible.value = true
-  
   }
 
   // 删除方法
   const handleDelete = (row) => {
-    // 实现删除逻辑
-  };
+    ElMessageBox.confirm('确定要删除该零件吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }).then(async () => {
+      try {
+        await deletePart(row.masterId || row.id)
+        ElMessage.success('删除成功')
+        await refreshList()
+      } catch (e) {
+        ElMessage.error('删除失败')
+      }
+    })
+  }
 
-
-  const handleSave = () => {
-    
+  const handleSave = async () => {
     dialogVisible.value = false
+    await refreshList()
   }
   
   // 弹窗标签页相关数据
@@ -215,9 +229,9 @@
   const addDialogVisible = ref(false)
   const currentRow = ref(null)
 
-  const handleAddSave = (data) => {
-   
+  const handleAddSave = async (data) => {
     addDialogVisible.value = false
+    await refreshList()
   }
   
   </script>
