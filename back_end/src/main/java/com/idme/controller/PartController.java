@@ -8,9 +8,11 @@ import com.idme.result.Result;
 import com.idme.service.PartService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import com.idme.pojo.dto.PartBuildDto;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,8 +86,12 @@ public class PartController {
      * @return
      */
     @GetMapping({"/version/{pageSize}/{curPage}/{masterId}"})
-    public Result versionQuery(@PathVariable Long masterId, @PathVariable Integer pageSize, @PathVariable Integer curPage){
-        List<PartVersionVO> partVersionVOS = partService.versionQuery(masterId, pageSize, curPage);// 在query方法内修改值
+    public Result versionQuery(@PathVariable Long masterId,
+                               @PathVariable Integer pageSize,
+                               @PathVariable Integer curPage,
+                               @RequestParam(required = false, defaultValue = "false") Boolean isFilterOld
+    ){
+        List<PartVersionVO> partVersionVOS = partService.versionQuery(masterId, pageSize, curPage, isFilterOld);// 在query方法内修改值
 
         Map<String, Object> view = new HashMap<>();
         view.put("count", partVersionVOS.size());
@@ -93,9 +99,27 @@ public class PartController {
         return Result.success(view);
     }
 
-    @DeleteMapping("/delete")
-    public Result delete(@RequestBody Long masterId){
-        partService.deleteByMasterId(masterId);
+    /**
+     * 根据masterId删除
+     * @param masterId
+     * @param request
+     * @return
+     */
+    @DeleteMapping(value = {"/delete/new", "/delete/all"}, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Result delete(
+            @RequestBody Long masterId,
+            HttpServletRequest request  // 用于区分请求路径
+    ) {
+        String requestURI = request.getRequestURI();
+
+        if (requestURI.endsWith("/delete/new")) {
+            // 处理单个删除
+            partService.deleteNewByMasterId(masterId);
+        } else if (requestURI.endsWith("/delete/all")) {
+            // 处理批量删除
+            partService.deleteAllByMasterId(masterId);
+        }
+
         return Result.success();
     }
 }

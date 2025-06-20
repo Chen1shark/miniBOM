@@ -25,7 +25,9 @@ public interface PartService {
 
     void checkInPart(Long masterId);
 
-    List<PartVersionVO> versionQuery(Long masterId, Integer pageSize, Integer curPage);
+    List<PartVersionVO> versionQuery(Long masterId, Integer pageSize, Integer curPage, Boolean isFilterOld);
 
-    void deleteByMasterId(Long masterId);
+    void deleteNewByMasterId(Long masterId);
+
+    void deleteAllByMasterId(Long masterId);
 }

@@ -2,10 +2,7 @@ package com.idme.service.serviceImpl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.huawei.innovation.rdm.coresdk.basic.dto.VersionCheckInDTO;
-import com.huawei.innovation.rdm.coresdk.basic.dto.VersionCheckOutDTO;
-import com.huawei.innovation.rdm.coresdk.basic.dto.VersionMasterDTO;
-import com.huawei.innovation.rdm.coresdk.basic.dto.VersionMasterModifierDTO;
+import com.huawei.innovation.rdm.coresdk.basic.dto.*;
 import com.huawei.innovation.rdm.coresdk.basic.enums.ConditionType;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryCondition;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestVo;
@@ -193,7 +190,7 @@ public class PartServiceImpl implements PartService {
         partDelegator.checkin(versionCheckInDTO);
     }
 
-    public List<PartVersionVO> versionQuery(Long masterId, Integer pageSize, Integer curPage) {
+    public List<PartVersionVO> versionQuery(Long masterId, Integer pageSize, Integer curPage, Boolean isFilterOld) {
         VersionMasterDTO versionMasterDTO = new VersionMasterDTO();
         versionMasterDTO.setMasterId(masterId);
 
@@ -206,6 +203,7 @@ public class PartServiceImpl implements PartService {
         //转化为PartVO
         List<PartVersionVO> partVersionVOS = new ArrayList<>();
         for(PartQueryViewDTO dto : partQueryViewDTOS){
+            if (isFilterOld && !dto.getLatestIteration()) continue;
             PartVersionVO item = new PartVersionVO();
             item.setPartId(dto.getId());
             item.setName(dto.getName());
@@ -217,10 +215,16 @@ public class PartServiceImpl implements PartService {
          return partVersionVOS;
     }
 
-    public void deleteByMasterId(Long masterId) {
+    public void deleteNewByMasterId(Long masterId) {
         VersionMasterModifierDTO versionMasterModifierDTO = new VersionMasterModifierDTO();
         versionMasterModifierDTO.setMasterId(masterId);
         partDelegator.deleteLatestVersion(versionMasterModifierDTO);
+    }
+
+    public void deleteAllByMasterId(Long masterId) {
+        MasterIdModifierDTO masterIdModifierDTO = new MasterIdModifierDTO();
+        masterIdModifierDTO.setMasterId(masterId);
+        partDelegator.delete(masterIdModifierDTO);
     }
 
 }
