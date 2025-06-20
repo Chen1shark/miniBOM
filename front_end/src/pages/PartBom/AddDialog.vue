@@ -87,6 +87,8 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue'
+import { useCreatePart } from '@/hooks/usePartApi'
+import { ElMessage } from 'element-plus'
 
 // 定义props接收父组件传递的数据
 const props = defineProps({
@@ -208,10 +210,32 @@ const handleClose = () => {
   emit('update:visible', false)
 }
 
+// API hook
+const { execute: createPart, loading } = useCreatePart()
+
 // 保存数据
-const handleSave = () => {
-  emit('save')
-  handleClose()
+const handleSave = async () => {
+  try {
+    await createPart({
+      name: formData.partName,
+      number: '', // 可根据实际表单补充
+      source: formData.source,
+      partType: formData.assemblyMode,
+      categoryId: formData.categoryCode,
+      clsAttrs: {
+        height: formData.height,
+        Brand: formData.width, // 可根据实际表单补充
+        Weight: formData.weight,
+        Size: '0', // 可根据实际表单补充
+        Number: '0' // 可根据实际表单补充
+      }
+    })
+    ElMessage.success('添加成功')
+    emit('save')
+    handleClose()
+  } catch (e) {
+    ElMessage.error('添加失败')
+  }
 }
 </script>
 
