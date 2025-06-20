@@ -85,10 +85,14 @@ export function useGetAllParts() {
   const fetchParts = async () => {
     loading.value = true
     error.value = null
-    
     try {
       const response = await apiGetAllpart()
-      parts.value = response.data || response
+      // 只解包 list
+      if (response && response.data && response.data.data) {
+        parts.value = response.data.data.list || []
+      } else {
+        parts.value = []
+      }
     } catch (err) {
       error.value = err
     } finally {
