@@ -6,6 +6,7 @@ import com.huawei.innovation.rdm.coresdk.basic.dto.ObjectReferenceParamDTO;
 import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdModifierDTO;
 import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdsModifierDTO;
 import com.huawei.innovation.rdm.coresdk.basic.enums.ConditionType;
+import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestStaticsVo;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestVo;
 import com.huawei.innovation.rdm.coresdk.basic.vo.RDMPageVO;
 import com.huawei.innovation.rdm.minibom.delegator.BOMLinkDelegator;
@@ -13,6 +14,7 @@ import com.huawei.innovation.rdm.minibom.delegator.BOMUsesOccurrenceDelegator;
 import com.huawei.innovation.rdm.minibom.dto.entity.BOMUsesOccurrenceCreateDTO;
 import com.huawei.innovation.rdm.minibom.dto.entity.BOMUsesOccurrenceUpdateDTO;
 import com.huawei.innovation.rdm.minibom.dto.entity.BOMUsesOccurrenceViewDTO;
+import com.huawei.innovation.rdm.minibom.dto.entity.PartViewDTO;
 import com.huawei.innovation.rdm.minibom.dto.relation.BOMLinkCreateDTO;
 import com.huawei.innovation.rdm.minibom.dto.relation.BOMLinkUpdateDTO;
 import com.huawei.innovation.rdm.minibom.dto.relation.BOMLinkViewDTO;
@@ -22,6 +24,10 @@ import com.idme.context.BaseContext;
 import com.idme.pojo.dto.BOMLinkDto;
 import com.idme.pojo.dto.BOMLinkSimpleDto;
 import com.idme.pojo.dto.BOMUpdateDto;
+import com.idme.pojo.vo.BOMNodeVO;
+import com.idme.pojo.vo.BOMTreeVO;
+import com.idme.pojo.vo.PartVO;
+import com.idme.pojo.vo.PartVersionVO;
 import com.idme.service.BOMService;
 import com.idme.service.PartService;
 import com.idme.utils.HttpClientUtil;
@@ -32,6 +38,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -45,6 +52,8 @@ public class BOMServiceImpl implements BOMService {
 
     @Autowired
     private BOMLinkDelegator bomLinkDelegator;
+
+    @Autowired PartService partService;
 
 
     /**
@@ -303,6 +312,10 @@ public class BOMServiceImpl implements BOMService {
         return;
     }
 
+    /**
+     * 批量删除BOM
+     * @param ids
+     */
     @Transactional
     public void delete(List<Long> ids) {
         List<Long> bomUsesIds = new ArrayList<>();
@@ -322,6 +335,8 @@ public class BOMServiceImpl implements BOMService {
         bomLinkDelegator.batchDelete(persistObjectIdsModifierDTO2);
     }
 
+
+
     /**
      * 根据BOMLink查询BOMUsesOccurrence
      * @param bomLinkId
@@ -339,6 +354,84 @@ public class BOMServiceImpl implements BOMService {
         List<BOMUsesOccurrenceViewDTO> bomUsesOccurrenceViewDTOS = bomUsesOccurrenceDelegator.find(queryRequestVo, rdmPageVO);
 
         return bomUsesOccurrenceViewDTOS.get(0).getId();
+    }
+
+    /**
+     * 查询BOM清单
+     * @return
+     */
+    public BOMTreeVO getChecklist() {
+        //查出所有BOMLink
+        QueryRequestVo queryRequestVo = new QueryRequestVo();
+        RDMPageVO rdmPageVO=new RDMPageVO();
+
+        rdmPageVO.setCurPage(1);
+        rdmPageVO.setPageSize(Integer.MAX_VALUE);
+
+        List<BOMLinkViewDTO> bomLinkViewDTOS = bomLinkDelegator.find(queryRequestVo, rdmPageVO);
+
+        Set<Long> topPartIds = new HashSet<>();
+        //查出所有source的partMasterId并判断其是否为顶级结点
+        for(BOMLinkViewDTO bomLinkViewDTO: bomLinkViewDTOS){
+            Long partId = bomLinkViewDTO.getSource().getId();
+
+            // 声明为可变容器类型
+            AtomicLong count = new AtomicLong(0L);
+            count.set(0L);
+
+            //获取partMasterId
+            PartVO partVO = partService.query("id", partId.toString(), 1, 1, count, true).get(0);
+            Long partMasterId = partVO.getPartMasterId();
+
+            //用target查BOMLink
+            List<Long> list = getSourceId(partMasterId);
+            if(list.isEmpty()){
+                topPartIds.add(partId);
+            }
+        }
+
+        List<BOMNodeVO> bomTree = new ArrayList<>();
+
+        //构造BOM清单
+        for(Long partId:topPartIds){
+            bomTree.add(buildBOMTree(partId));
+        }
+
+        BOMTreeVO bomTreeVO = new BOMTreeVO();
+        bomTreeVO.setBomTree(bomTree);
+
+        return bomTreeVO;
+
+    }
+
+    /**
+     * 构建BOM清单
+     * @param partId
+     * @return
+     */
+    private BOMNodeVO buildBOMTree(Long partId) {
+
+        AtomicLong count = new AtomicLong(0L);
+        PartVO partVO = partService.query("id", partId.toString(), 1, 1, count, true).get(0);
+
+        //构建当前节点
+        BOMNodeVO node = BOMNodeVO.builder()
+                .partId(partId)
+                .partMasterId(partVO.getPartMasterId())
+                .name(partVO.getName())
+                .children(new ArrayList<>())
+                .build();
+
+        List<BOMLinkSimpleDto> bomLinkDetails = getBOMLinkDetails(node.getPartId());
+
+        //构建子节点
+        for(BOMLinkSimpleDto bomLinkSimpleDto: bomLinkDetails) {
+
+            PartVersionVO partVersionVO = partService.versionQuery(bomLinkSimpleDto.getTargetId(), 1, 1, true).get(0);
+            BOMNodeVO childNode = buildBOMTree(partVersionVO.getPartId());
+            node.getChildren().add(childNode);
+        }
+        return node;
     }
 
 

@@ -4,6 +4,7 @@ import com.idme.pojo.dto.BOMDeleteDto;
 import com.idme.pojo.dto.BOMLinkDto;
 import com.idme.pojo.dto.BOMLinkSimpleDto;
 import com.idme.pojo.dto.BOMUpdateDto;
+import com.idme.pojo.vo.BOMTreeVO;
 import com.idme.pojo.vo.BOMVO;
 import com.idme.pojo.vo.PartVO;
 import com.idme.pojo.vo.PartVersionVO;
@@ -119,6 +120,16 @@ public class BOMController {
         return Result.success();
     }
 
+    /**
+     * 查询BOM清单
+     * @return
+     */
+    @GetMapping("/checklist")
+    public Result<BOMTreeVO> getChecklist(){
+
+        return Result.success(bomService.getChecklist());
+
+    }
 
 
 }

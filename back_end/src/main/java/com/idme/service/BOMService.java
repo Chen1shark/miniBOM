@@ -3,6 +3,8 @@ package com.idme.service;
 import com.idme.pojo.dto.BOMLinkDto;
 import com.idme.pojo.dto.BOMLinkSimpleDto;
 import com.idme.pojo.dto.BOMUpdateDto;
+import com.idme.pojo.vo.BOMNodeVO;
+import com.idme.pojo.vo.BOMTreeVO;
 
 import java.util.List;
 
@@ -42,5 +44,16 @@ public interface BOMService {
      */
     void update(BOMUpdateDto bomUpdateDto);
 
+    /**
+     * 批量删除BOM
+     * @param ids
+     */
     void delete(List<Long> ids);
+
+
+    /**
+     * 查询BOM清单
+     * @return
+     */
+    BOMTreeVO getChecklist();
 }
