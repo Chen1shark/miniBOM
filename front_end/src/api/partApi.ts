@@ -68,14 +68,16 @@ export function apiUpdate(data2:updatePart){
 
 
 //根据masterID删除
- export function apideletePart(data3:string){
-      return httpRequest({
-        url: '/part/delete/new',
-        method: 'delete',
-        data: data3
-      })
-
- }
+export function apideletePart(masterId: string | number){
+  return httpRequest({
+    url: '/part/delete/all',
+    method: 'delete',
+    data: Number(masterId),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
 
 
 

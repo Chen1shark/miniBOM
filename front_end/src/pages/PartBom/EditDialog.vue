@@ -31,14 +31,16 @@
           </el-form-item>
           <el-form-item label="来源">
             <el-select v-model="formData.source" placeholder="请选择来源">
-              <el-option label="制造" value="制造" />
-              <el-option label="购买" value="购买" />
+              <el-option label="制造" value="Make" />
+              <el-option label="购买" value="Buy" />
+              <el-option label="购买-单一供应源" value="Buy_SingleSource" />
             </el-select>
           </el-form-item>
           <el-form-item label="装配模式">
             <el-select v-model="formData.assemblyMode" placeholder="请选择模式">
-              <el-option label="装配part" value="装配part" />
-              <el-option label="零件part" value="零件part" />
+              <el-option label="可分离" value="Separable"/>
+              <el-option label="不可分离" value="Inseparable" />
+              <el-option label="零件" value="Part" />
             </el-select>
           </el-form-item>
           <el-form-item label="分类">

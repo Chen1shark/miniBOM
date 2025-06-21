@@ -136,6 +136,7 @@
   // 初始化数据
   const refreshList = async () => {
     await fetchParts()
+    
     originalData.value = parts.value ? [...parts.value] : []
     tdForPart.value = parts.value ? [...parts.value] : []
     total.value = tdForPart.value.length
@@ -143,6 +144,7 @@
 
   onMounted(async () => {
     await refreshList()
+    console.log('有挂载')
   })
 
   // 计算当前页显示的数据
@@ -167,8 +169,13 @@
 
     // 根据搜索条件过滤数据
     const filteredData = originalData.value.filter(item => {
-      const matchPartCode = !partCode || (item.partCode && item.partCode.toLowerCase().includes(partCode.toLowerCase()))
-      const matchPartName = !partName || (item.partName && item.partName.toLowerCase().includes(partName.toLowerCase()))
+      // 确保字段存在且转换为字符串后再调用toLowerCase()
+      const itemPartId = item.partId ? String(item.partId) : ''
+      const itemName = item.name ? String(item.name) : ''
+      
+      const matchPartCode = !partCode || itemPartId.toLowerCase().includes(partCode.toLowerCase())
+      const matchPartName = !partName || itemName.toLowerCase().includes(partName.toLowerCase())
+      
       return matchPartCode && matchPartName
     })
 
@@ -210,10 +217,19 @@
       type: 'warning',
     }).then(async () => {
       try {
-        await deletePart(row.masterId || row.id)
+        const partMasterId = row.partMasterId || row.id
+        
+        if (!partMasterId) {
+          ElMessage.error('无法获取零件ID')
+          return
+        }
+        
+        // 使用封装好的useDeletePart hook
+        await deletePart(partMasterId)
         ElMessage.success('删除成功')
         await refreshList()
       } catch (e) {
+        console.error('删除失败:', e)
         ElMessage.error('删除失败')
       }
     })

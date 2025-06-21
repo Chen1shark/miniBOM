@@ -78,7 +78,7 @@ function createApiHook<T, R>(apiFunction: (data: T) => Promise<R>) {
 
 // 获取所有零件
 export function useGetAllParts() {
-  const parts = ref([])
+  const parts = ref<any[]>([])
   const loading = ref(false)
   const error = ref<unknown | null>(null)
 
@@ -87,14 +87,48 @@ export function useGetAllParts() {
     error.value = null
     try {
       const response = await apiGetAllpart()
-      // 只解包 list
-      if (response && response.data && response.data.data) {
-        parts.value = response.data.data.list || []
-      } else {
-        parts.value = []
+      console.log('API原始响应:', response)
+      
+      // 尝试不同的数据结构
+      let dataArray = []
+      
+      if (response && response.data) {
+        // 情况1: response.data.data.list
+        if (response.data.data && response.data.data.list) {
+          dataArray = response.data.data.list
+          console.log('使用 response.data.data.list')
+        }
+        // 情况2: response.data.list
+        else if (response.data.list) {
+          dataArray = response.data.list
+          console.log('使用 response.data.list')
+        }
+        // 情况3: response.data 直接是数组
+        else if (Array.isArray(response.data)) {
+          dataArray = response.data
+          console.log('使用 response.data (数组)')
+        }
+        // 情况4: response.data 是对象，包含数组属性
+        else if (typeof response.data === 'object') {
+          // 查找包含数组的属性
+          for (const key in response.data) {
+            if (Array.isArray(response.data[key])) {
+              dataArray = response.data[key]
+              console.log(`使用 response.data.${key}`)
+              break
+            }
+          }
+        }
       }
+      
+      parts.value = dataArray
+      console.log('最终解析的parts:', parts.value)
+      console.log('parts长度:', parts.value.length)
+      
     } catch (err) {
+      console.error('获取零件数据失败:', err)
       error.value = err
+      parts.value = []
     } finally {
       loading.value = false
     }
