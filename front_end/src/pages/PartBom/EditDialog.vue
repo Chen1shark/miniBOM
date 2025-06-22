@@ -66,26 +66,25 @@
           <el-button @click="showParentDialog">查看父项</el-button>
         </div>
 
-        <!-- 可编辑表格 -->
         <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
-          <el-table-column prop="code" label="编码" width="160" />
-          <el-table-column prop="name" label="名称" />
-          <el-table-column label="数量" width="120">
-            <template #default="{ row }">
-              <el-input-number v-model="row.quantity" :min="1" @change="onBomChange(row)" />
-            </template>
-          </el-table-column>
-          <el-table-column label="位号" width="160">
-            <template #default="{ row }">
-              <el-input v-model="row.position" @input="onBomChange(row)" />
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" align="center">
-            <template #default="{ $index }">
-              <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+    <el-table-column prop="code" label="编码" width="160" />
+    <el-table-column prop="name" label="名称" />
+    <el-table-column label="数量" width="120">
+      <template #default="{ row }">
+        <el-input-number v-model="row.quantity" :min="1" @change="onBomChange(row)" />
+      </template>
+    </el-table-column>
+    <el-table-column label="位号" width="160">
+      <template #default="{ row }">
+        <el-input v-model="row.position" @input="onBomChange(row)" />
+      </template>
+    </el-table-column>
+    <el-table-column label="操作" width="100" align="center">
+      <template #default="{ $index }">
+        <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
       </el-tab-pane>
 
       <!-- 版本管理 -->
@@ -153,10 +152,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, onMounted } from 'vue'
 import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
+import { apiBomChecklist, apiBomUpdate, apiBomDelete } from '@/api/BOM'
 
 // ---------- props & emit ----------
 const props = defineProps({
@@ -271,37 +271,6 @@ const categoryTree = [
 ]
 
 
-// ---------- BOM 清单数据 (模拟初始树结构) ----------
-const bomItems = ref([
-  {
-    code: 'A-1000',
-    name: '主机架',
-    quantity: 1,
-    position: '-',
-    children: [
-      {
-        code: 'B-1100',
-        name: '传动系统',
-        quantity: 1,
-        position: '-',
-        children: [
-          { code: 'C-1110', name: '齿轮', quantity: 4, position: 'G1' },
-          { code: 'C-1120', name: '轴承', quantity: 2, position: 'B1-B2' }
-        ]
-      },
-      {
-        code: 'B-1200',
-        name: '控制系统',
-        quantity: 1,
-        position: '-',
-        children: [
-          { code: 'C-1210', name: '电机', quantity: 1, position: 'M1' },
-          { code: 'C-1220', name: '传感器', quantity: 3, position: 'S1-S3' }
-        ]
-      }
-    ]
-  }
-])
 
 // ---------- 计算属性：树数据 ----------
 const bomTree = computed(() => bomItems.value)
@@ -336,10 +305,7 @@ watch(
   }
 )
 
-// ---------- 表格行变化回调 ----------
-const onBomChange = (row) => {
-  console.log('BOM 行已更新', row)
-}
+
 
 // ---------- 工具栏按钮 ----------
 const showAddPartDialog = () => {
@@ -355,9 +321,6 @@ const showParentDialog = () => {
 // ---------- BOM 子项增/删 ----------
 const addParts = (items) => {
   bomItems.value.push(...items)
-}
-const removeBomItem = (index) => {
-  bomItems.value.splice(index, 1)
 }
 
 // ---------- API hook ----------
@@ -391,6 +354,52 @@ const handleSave = async () => {
     ElMessage.error('编辑失败')
   }
 }
+
+// 响应式数据
+const bomItems = ref([]);
+
+// 获取BOM清单
+const fetchBomItems = async () => {
+  try {
+    const response = await apiBomChecklist();
+    bomItems.value = response.data; // 假设接口返回的数据格式是 { data: [...] }
+  } catch (error) {
+    console.error('获取BOM清单失败:', error);
+  }
+};
+
+// 更新BOM项
+const onBomChange = async (row) => {
+  try {
+    const param = {
+      bomLinkId: row.bomLinkId, // 假设每个 BOM 项都有 bomLinkId
+      quantity: row.quantity,
+      referenceDesignator: row.position,
+    };
+    await apiBomUpdate(param); // 调用更新接口
+    console.log('BOM项已更新');
+  } catch (error) {
+    console.error('更新BOM项失败:', error);
+  }
+};
+
+// 删除BOM项
+const removeBomItem = async (index) => {
+  try {
+    const param = { ids: [bomItems.value[index].bomLinkId] }; // 获取bomLinkId
+    await apiBomDelete(param); // 调用删除接口
+    bomItems.value.splice(index, 1); // 从数据中删除
+    console.log('BOM项已删除');
+  } catch (error) {
+    console.error('删除BOM项失败:', error);
+  }
+};
+
+// 在组件挂载后获取BOM清单
+onMounted(() => {
+  fetchBomItems();
+});
+
 </script>
 
 <style scoped>

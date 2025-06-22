@@ -1,4 +1,3 @@
-// AddPartDialog.vue -------------------------------------------------
 <template>
   <el-dialog v-model="visible" title="添加部件" width="70%" @closed="emit('update:visible', false)">
     <!-- 搜索栏 -->
@@ -16,8 +15,11 @@
       @selection-change="onSelectionChange"
     >
       <el-table-column type="selection" width="55" />
-      <el-table-column prop="code" label="编码" width="180" />
+      <el-table-column prop="partId" label="部件编号" width="180" />
       <el-table-column prop="name" label="名称" />
+      <el-table-column prop="version" label="版本" />
+      <el-table-column prop="partType" label="部件类型" />
+      <el-table-column prop="source" label="来源" />
     </el-table>
 
     <template #footer>
@@ -31,8 +33,8 @@
 
     <!-- 填写数量 / 位号弹窗 -->
     <el-dialog v-model="quantityDialogVisible" title="填写数量和位号" width="30%">
-      <div v-for="item in selectedParts" :key="item.code" class="item-form" style="margin-bottom: 16px;">
-        <p>{{ item.code }} - {{ item.name }}</p>
+      <div v-for="item in selectedParts" :key="item.partId" class="item-form" style="margin-bottom: 16px;">
+        <p>{{ item.partId }} - {{ item.name }}</p>
         <el-form :model="item" :inline="true">
           <el-form-item label="数量">
             <el-input-number v-model="item.quantity" :min="1" />
@@ -54,6 +56,7 @@
 
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
+import { apiGetAllpart } from '@/api/partApi';  // 引入接口方法
 
 const props = defineProps({
   visible: {
@@ -74,22 +77,26 @@ watch(
 const searchCode = ref('')
 const searchName = ref('')
 
-// 数据源（实际项目中请替换为接口请求）
-const parts = ref([
-  { code: 'P-1001', name: '齿轮' },
-  { code: 'P-1002', name: '轴承' },
-  { code: 'P-1003', name: '电机' }
-])
+// 数据源（初始化为空，待接口请求后填充）
+const parts = ref([])
 
-const fetchParts = () => {
-  // TODO: 调用接口刷新 parts
+const fetchParts = async () => {
+  try {
+    const response = await apiGetAllpart();
+    console.log('获取的数据:', response); // 打印获取的原始数据
+
+    // 从数据中提取list数组
+    parts.value = response.data.list || [];
+  } catch (error) {
+    console.error('获取部件失败', error);
+  }
 }
 
 // 过滤后的展示数据
 const filteredParts = computed(() => {
   return parts.value.filter((p) => {
     return (
-      (!searchCode.value || p.code.includes(searchCode.value)) &&
+      (!searchCode.value || p.partId.toString().includes(searchCode.value)) &&
       (!searchName.value || p.name.includes(searchName.value))
     )
   })
