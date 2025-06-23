@@ -68,20 +68,27 @@
         </div>
 
        <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
-  <el-table-column prop="code" label="编码" width="160" />
-  <el-table-column prop="name" label="名称" />
-  
-  <!-- 数量列 - 去掉加减号，只显示数据 -->
-  <el-table-column label="数量" width="120">
+  <!-- 编码列 -->
+  <el-table-column label="编码" width="260">
     <template #default="{ row }">
-      <span>{{ row.quantity }}</span>  <!-- 只显示数量，去掉输入框 -->
+      <span>{{ row.partId }}</span>  <!-- 显示 partId 作为编码 -->
     </template>
   </el-table-column>
 
-  <!-- 位号列 - 去掉输入框，只显示数据 -->
+  <!-- 名称列 -->
+  <el-table-column prop="name" label="名称" />
+
+  <!-- 数量列 -->
+  <el-table-column label="数量" width="120">
+    <template #default="{ row }">
+      <span>{{ row.quantity }}</span>  <!-- 显示数量 -->
+    </template>
+  </el-table-column>
+
+  <!-- 位号列 -->
   <el-table-column label="位号" width="160">
     <template #default="{ row }">
-      <span>{{ row.position }}</span>  <!-- 只显示位号，去掉输入框 -->
+      <span>{{ row.referenceDesignator }}</span>  <!-- 显示 referenceDesignator 作为位号 -->
     </template>
   </el-table-column>
 
@@ -93,6 +100,7 @@
     </template>
   </el-table-column>
 </el-table>
+
 
 
       </el-tab-pane>
@@ -167,6 +175,7 @@
     <el-button type="primary" @click="handleEditBomSave">保存</el-button>
   </template>
 </el-dialog>
+
 
 
     <!-- 新增子项组件 -->
@@ -372,30 +381,65 @@ const editBomData = reactive({
 
 // 显示修改 BOM 弹窗
 const showEditBomDialog = (row) => {
-  // 先将选中的 BOM 数据填充到修改表单
-  editBomData.quantity = row.quantity;
-  editBomData.position = row.position;
-  editBomDialogVisible.value = true;
-};
+  // 将当前行的数据填充到弹窗表单中
+  editBomData.bomLinkId = row.bomLinkId
+  editBomData.quantity = row.quantity
+  editBomData.position = row.referenceDesignator
+  // 显示弹窗
+  editBomDialogVisible.value = true
+}
 
-// 保存修改的 BOM 项
 const handleEditBomSave = async () => {
   try {
-    // 假设有一个 API 接口用于更新 BOM 项
     const param = {
-      bomLinkId: editBomData.bomLinkId, // 获取 bomLinkId
-      quantity: editBomData.quantity,
-      referenceDesignator: editBomData.position
-    };
-    await apiBomUpdate(param); // 调用更新接口
-    ElMessage.success('BOM项已更新');
-    editBomDialogVisible.value = false;
-    // 需要更新 BOM 项数据
-    fetchBomItems();
+      bomLinkId: editBomData.bomLinkId.toString(),  // 将 bomLinkId 转换为字符串
+      quantity: editBomData.quantity,                // 获取修改后的数量
+      referenceDesignator: editBomData.position,     // 获取修改后的位号
+    }
+
+    // 调用 apiBomUpdate 更新 BOM 项
+    const response = await apiBomUpdate(param)
+
+    // 如果更新成功，更新 bomItems 数据并关闭弹窗
+    if (response.code === 1) {
+      // 在 bomItems 中找到对应的 BOM 项并更新
+      const index = bomItems.value.findIndex(item => item.bomLinkId === editBomData.bomLinkId)
+      if (index !== -1) {
+        bomItems.value[index].quantity = editBomData.quantity
+        bomItems.value[index].referenceDesignator = editBomData.position
+      }
+      ElMessage.success('BOM项已更新')
+      editBomDialogVisible.value = false  // 关闭弹窗
+    } else {
+      ElMessage.error('更新失败')
+    }
   } catch (error) {
-    console.error('更新BOM项失败:', error);
+    console.error('更新BOM项失败:', error)
+    ElMessage.error('更新BOM项失败')
   }
-};
+}
+
+
+const removeBomItem = async (index) => {
+  try {
+    // 获取 BOM 项的 ID，并将其转换为字符串
+    const bomLinkId = bomItems.value[index].bomLinkId.toString()  // 转换 BigInt 为 string
+
+    // 调用删除接口
+    const response = await apiBomDelete({ ids: [bomLinkId] })
+    
+    // 如果删除成功，移除 bomItems 中对应的项
+    if (response.code === 1) {  // 根据接口返回的 code 判断是否成功
+      bomItems.value.splice(index, 1)  // 从 bomItems 中移除对应项
+      ElMessage.success('BOM项已删除')  // 提示删除成功
+    } else {
+      ElMessage.error('删除失败')  // 提示删除失败
+    }
+  } catch (error) {
+    console.error('删除BOM项失败:', error)
+    ElMessage.error('删除BOM项失败')
+  }
+}
 
 
 
