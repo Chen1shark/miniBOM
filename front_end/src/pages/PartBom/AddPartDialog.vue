@@ -7,16 +7,18 @@
       <el-button type="primary" @click="fetchParts" style="margin-left: 10px;">搜索</el-button>
     </div>
 
-    <!-- 选择列表（单选 radio） -->
+    <!-- 选择列表（多选） -->
     <el-table
       :data="filteredParts"
       border
       style="width: 100%; margin-top: 12px;"
-      @current-change="onCurrentChange"
+      @selection-change="onSelectionChange"
       :highlight-current-row="true"
       :current-row="currentPart"
+      :row-key="row => row.partId"
+      type="selection"
     >
-      <el-table-column type="index" width="50" label="#" />
+      <el-table-column type="selection" width="50" label="#" />
       <el-table-column prop="partId" label="部件编号" width="180" />
       <el-table-column prop="name" label="名称" />
       <el-table-column prop="version" label="版本" />
@@ -27,7 +29,7 @@
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" :disabled="!currentPart" @click="openQuantityDialog">
+        <el-button type="primary" :disabled="!selectedParts.length" @click="openQuantityDialog">
           添加选定项
         </el-button>
       </span>
@@ -35,14 +37,14 @@
 
     <!-- 填写数量 / 位号弹窗 -->
     <el-dialog v-model="quantityDialogVisible" title="填写数量和位号" width="30%">
-      <div v-if="currentPart" class="item-form" style="margin-bottom: 16px;">
-        <p>{{ currentPart.partId }} - {{ currentPart.name }}</p>
-        <el-form :model="currentPart" :inline="true">
+      <div v-for="item in selectedParts" :key="item.partId" class="item-form" style="margin-bottom: 16px;">
+        <p>{{ item.partId }} - {{ item.name }}</p>
+        <el-form :model="item" :inline="true">
           <el-form-item label="数量">
-            <el-input-number v-model="currentPart.quantity" :min="1" />
+            <el-input-number v-model="item.quantity" :min="1" />
           </el-form-item>
           <el-form-item label="位号">
-            <el-input v-model="currentPart.position" />
+            <el-input v-model="item.position" />
           </el-form-item>
         </el-form>
       </div>
@@ -64,22 +66,18 @@ import { ElMessage } from 'element-plus'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
-  parentId: { type: [Number, String], required: true }
+  parentId: { type: String, required: true }
 })
 const emit = defineEmits(['update:visible', 'add'])
 
-// 对话框显隐
 const visible = ref(props.visible)
 watch(() => props.visible, val => {
   visible.value = val
   if (val) fetchParts()      // 弹窗打开时自动加载部件列表
 })
 
-// 搜索条件
 const searchCode = ref('')
 const searchName = ref('')
-
-// 数据源
 const parts = ref([])
 
 const fetchParts = async () => {
@@ -91,7 +89,6 @@ const fetchParts = async () => {
   }
 }
 
-// 过滤后的展示数据
 const filteredParts = computed(() => {
   return parts.value.filter((p) => {
     return (
@@ -101,49 +98,49 @@ const filteredParts = computed(() => {
   })
 })
 
-// 单选选中项
-const currentPart = ref(null)
-const onCurrentChange = (row) => {
-  if (row) {
-    currentPart.value = {
-      ...row,
-      quantity: 1,
-      position: ''
-    }
-  }
+// 选中的部件
+const selectedParts = ref([])
+
+const onSelectionChange = (selectedRows) => {
+  selectedParts.value = selectedRows.map((row) => ({
+    ...row,
+    quantity: 1.00, // 设置初始数量为1
+    position: ''    // 设置初始位号为空
+  }))
 }
 
 // 填数量 & 位号弹窗
 const quantityDialogVisible = ref(false)
 const openQuantityDialog = () => {
-  if (!currentPart.value) {
-    ElMessage.warning('请选择一个部件')
+  if (selectedParts.value.length === 0) {
+    ElMessage.warning('请选择一个或多个部件')
     return
   }
   quantityDialogVisible.value = true
 }
 
-// 提交，只处理单个
 const submit = async () => {
-  if (!currentPart.value) return
+  if (!selectedParts.value || selectedParts.value.length === 0) return
   try {
-    const param = {
-  sourceId: Number(props.parentId),              // 父部件ID
-  targetId: currentPart.value.partId,            // 子部件ID
-  quantity: currentPart.value.quantity,
-  referenceDesignator: currentPart.value.position
-}
+    const params = selectedParts.value.map((part) => {
+      return {
+        sourceId: String(props.parentId), // 父部件 ID，转换为字符串
+        targetId: part.partMasterId,            // 子部件 ID
+        quantity: part.quantity.toFixed(2), // 保证传递两位小数的字符串
+        referenceDesignator: part.position // 位号，直接传递字符串
+      }
+    })
 
-    console.log('发送的请求参数:', param)
-    const response = await apiBomCreate(param)
+    console.log('发送的请求参数:', params) // 查看发送的参数
+    const response = await apiBomCreate(params)
     if (response.code === 1) {
-      ElMessage.success(`${currentPart.value.name} 添加成功`)
+      ElMessage.success('添加成功')
     } else {
-      ElMessage.error(`${currentPart.value.name} 添加失败`)
+      ElMessage.error('添加失败')
     }
     quantityDialogVisible.value = false
     visible.value = false
-    emit('add', currentPart.value)
+    emit('add', selectedParts.value)
   } catch (error) {
     console.error('创建 BOM 关系失败:', error)
     ElMessage.error('创建 BOM 关系失败')
