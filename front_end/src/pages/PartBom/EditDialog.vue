@@ -52,6 +52,7 @@
               check-strictly
               node-key="id"
               default-expand-all
+              :loading="categoryTreeLoading"
             />
           </el-form-item>
         </el-form>
@@ -158,6 +159,7 @@ import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
 import { apiBomChecklist, apiBomUpdate, apiBomDelete,apiBomCreate } from '@/api/BOM'
+import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
 
 // ---------- props & emit ----------
 const props = defineProps({
@@ -178,7 +180,7 @@ const activeTab = ref('basic')
 
 // ---------- 基础表单 ----------
 const formData = reactive({
-  masterId: '',
+  partMasterId: '',
   partNumber: '',
   partName: '',
   defaultUnit: 'PCS',
@@ -198,80 +200,7 @@ const formData = reactive({
   notes: ''
 })
 
-const categoryTree = [
-  {
-    id: '1',
-    name: '机械类',
-    children: [
-      {
-        id: '1-1',
-        name: '传动系统',
-        children: [
-          { id: '1-1-1', name: '齿轮' },
-          { id: '1-1-2', name: '轴承' },
-          { id: '1-1-3', name: '轴' }
-        ]
-      },
-      {
-        id: '1-2',
-        name: '液压系统',
-        children: [
-          { id: '1-2-1', name: '油缸' },
-          { id: '1-2-2', name: '泵' },
-          { id: '1-2-3', name: '阀' }
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    name: '电气类',
-    children: [
-      {
-        id: '2-1',
-        name: '控制系统',
-        children: [
-          { id: '2-1-1', name: '控制器' },
-          { id: '2-1-2', name: '传感器' },
-          { id: '2-1-3', name: '执行器' }
-        ]
-      },
-      {
-        id: '2-2',
-        name: '动力系统',
-        children: [
-          { id: '2-2-1', name: '电机' },
-          { id: '2-2-2', name: '电池' },
-          { id: '2-2-3', name: '电源' }
-        ]
-      }
-    ]
-  },
-  {
-    id: '3',
-    name: '结构类',
-    children: [
-      {
-        id: '3-1',
-        name: '框架',
-        children: [
-          { id: '3-1-1', name: '主框架' },
-          { id: '3-1-2', name: '支撑架' }
-        ]
-      },
-      {
-        id: '3-2',
-        name: '外壳',
-        children: [
-          { id: '3-2-1', name: '防护罩' },
-          { id: '3-2-2', name: '机箱' }
-        ]
-      }
-    ]
-  }
-]
-
-
+const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading } = useCategoryTreeInPart()
 
 // ---------- 计算属性：树数据 ----------
 const bomTree = computed(() => bomItems.value)
@@ -288,13 +217,27 @@ watch(
   (newVal) => {
     dialogVisible.value = newVal
     if (newVal) {
-      // 先重置
-      Object.keys(formData).forEach(key => {
-        formData[key] = '' // 或初始值
-      })
-      formData.quantity = 1 // 例如初始值
+      fetchCategoryTreeData()
+      // 先重置为默认值
+      formData.partMasterId = ''
+      formData.partNumber = ''
+      formData.partName = props.rowData.partName
       formData.defaultUnit = 'PCS'
-      // 再填充
+      formData.source = props.rowData.source
+      formData.assemblyMode = props.rowData.assemblyMode
+      formData.categoryCode = props.rowData.categoryCode
+      formData.weight = props.rowData.weight
+      formData.height = props.rowData.height
+      formData.width = ''
+      formData.length = ''
+      formData.description = ''
+      formData.material = ''
+      formData.specification = ''
+      formData.unit = ''
+      formData.parentPart = ''
+      formData.quantity = 1
+      formData.notes = ''
+      // 再用rowData回填
       Object.keys(formData).forEach(key => {
         if (props.rowData && props.rowData[key] !== undefined) {
           formData[key] = props.rowData[key]
@@ -331,13 +274,18 @@ const handleClose = () => {
 }
 const handleSave = async () => {
   try {
+    // 校验partMasterId不能为空
+    if (!formData.partMasterId) {
+      ElMessage.error('主对象ID（partMasterId）不能为空')
+      return
+    }
     await updatePart({
-      masterId: formData.masterId,
+      masterId: formData.partMasterId.toString(),
       name: formData.partName,
       number: formData.partNumber || '',
       source: formData.source,
       partType: formData.assemblyMode,
-      categoryId: formData.categoryCode,
+      categoryId: formData.categoryCode.toString(),
       clsAttrs: {
         height: formData.height,
         Brand: formData.width, // 可根据实际表单补充

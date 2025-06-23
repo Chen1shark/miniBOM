@@ -1,3 +1,5 @@
+// @ts-ignore: no type definitions for json-bigint
+import JSONbig from 'json-bigint'
 import axios from 'axios'
 
 // 创建一个 axios 实例
@@ -8,6 +10,14 @@ const service = axios.create({
 	headers: {
 		
 	},
+	transformResponse: [function (data) {
+		try {
+			// 只对 JSON 字符串做解析，支持大整数
+			return JSONbig({ useNativeBigInt: true }).parse(data)
+		} catch (e) {
+			return data
+		}
+	}]
 })
 
 // 添加请求拦截器
@@ -15,6 +25,7 @@ service.interceptors.request.use(
 	function (config) {
 		// 从 localStorage 获取 token
 		const token = localStorage.getItem('token')
+		console.log('这是token',token);
 		// 如果 token 存在，则添加到请求头
 		if (token) {
 			config.headers['token'] = token

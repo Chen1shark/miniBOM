@@ -91,6 +91,8 @@
 import { ref, reactive, watch } from 'vue'
 import { useCreatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
+import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
+const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading } = useCategoryTreeInPart()
 
 // 定义props接收父组件传递的数据
 const props = defineProps({
@@ -109,80 +111,6 @@ const dialogVisible = ref(props.visible)
 // 当前激活的标签页
 const activeTab = ref('basic')
 
-// 分类树测试数据
-const categoryTree = [
-  {
-    id: '1',
-    name: '机械类',
-    children: [
-      {
-        id: '1-1',
-        name: '传动系统',
-        children: [
-          { id: '1-1-1', name: '齿轮' },
-          { id: '1-1-2', name: '轴承' },
-          { id: '1-1-3', name: '轴' }
-        ]
-      },
-      {
-        id: '1-2',
-        name: '液压系统',
-        children: [
-          { id: '1-2-1', name: '油缸' },
-          { id: '1-2-2', name: '泵' },
-          { id: '1-2-3', name: '阀' }
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    name: '电气类',
-    children: [
-      {
-        id: '2-1',
-        name: '控制系统',
-        children: [
-          { id: '2-1-1', name: '控制器' },
-          { id: '2-1-2', name: '传感器' },
-          { id: '2-1-3', name: '执行器' }
-        ]
-      },
-      {
-        id: '2-2',
-        name: '动力系统',
-        children: [
-          { id: '2-2-1', name: '电机' },
-          { id: '2-2-2', name: '电池' },
-          { id: '2-2-3', name: '电源' }
-        ]
-      }
-    ]
-  },
-  {
-    id: '3',
-    name: '结构类',
-    children: [
-      {
-        id: '3-1',
-        name: '框架',
-        children: [
-          { id: '3-1-1', name: '主框架' },
-          { id: '3-1-2', name: '支撑架' }
-        ]
-      },
-      {
-        id: '3-2',
-        name: '外壳',
-        children: [
-          { id: '3-2-1', name: '防护罩' },
-          { id: '3-2-2', name: '机箱' }
-        ]
-      }
-    ]
-  }
-]
-
 // 表单数据
 const formData = reactive({
   partName: '',
@@ -200,7 +128,7 @@ const formData = reactive({
 watch(() => props.visible, (newVal) => {
   dialogVisible.value = newVal
   if (newVal) {
-    // 重置表单数据
+    fetchCategoryTreeData()
     Object.keys(formData).forEach(key => {
       formData[key] = ''
     })
@@ -223,7 +151,7 @@ const handleSave = async () => {
       number: '', // 可根据实际表单补充
       source: formData.source,
       partType: formData.assemblyMode,
-      categoryId: formData.categoryCode,
+      categoryId: formData.categoryCode.toString(),
       clsAttrs: {
         height: formData.height,
         Brand: formData.width, // 可根据实际表单补充
