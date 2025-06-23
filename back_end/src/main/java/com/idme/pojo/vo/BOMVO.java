@@ -7,12 +7,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BOMVO {
     private Long bomLinkId;//BOMLink的id
+
+    private BigDecimal quantity;//数量
 
     private String referenceDesignator;//位号
 

@@ -91,6 +91,7 @@ public class BOMController {
             BeanUtils.copyProperties(partVO,bomVO);
             bomVO.setBomLinkId(bomLinkDetail.getBomLinkId());
             bomVO.setReferenceDesignator(referenceDesignator);
+            bomVO.setQuantity(bomLinkDetail.getQuantity());
             bomVOs.add(bomVO);
         }
 

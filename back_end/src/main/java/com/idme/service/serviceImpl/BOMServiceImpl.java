@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import javax.websocket.Decoder;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -233,7 +234,7 @@ public class BOMServiceImpl implements BOMService {
                 .map(dataItem -> {
                     BOMLinkSimpleDto dto = new BOMLinkSimpleDto();
 
-                    // 设置BOMLinkId（data下的直接id字段）
+                    //设置BOMLinkId（data下的直接id字段）
                     Object bomLinkId = dataItem.get("id");
                     if(bomLinkId instanceof Number) {
                         dto.setBomLinkId(((Number)bomLinkId).longValue());
@@ -245,7 +246,23 @@ public class BOMServiceImpl implements BOMService {
                         }
                     }
 
-                    // 设置targetId（从target对象获取）
+                    //quantity
+                    if(dataItem.containsKey("quantity")) {
+                        Object quantity = dataItem.get("quantity");
+                        if(quantity != null) {
+                            try {
+                                dto.setQuantity(quantity instanceof BigDecimal ?
+                                        (BigDecimal) quantity :
+                                        new BigDecimal(quantity.toString()));
+                            } catch(Exception e) {
+                                log.warn("无效的quantity值: {}", quantity);
+                            }
+                        }
+                    }
+
+
+
+                    //设置targetId（从target对象获取）
                     if(dataItem.containsKey("target")) {
                         Object targetObj = dataItem.get("target");
                         if(targetObj instanceof Map) {
