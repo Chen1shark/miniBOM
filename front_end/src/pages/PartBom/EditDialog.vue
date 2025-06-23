@@ -356,22 +356,11 @@ const fetchBomItems = async () => {
   }
 }
 
-
-
-
-// ---------- BOM 子项增/删 ----------
 const addParts = (items) => {
-  // 确保 bomItems 是一个数组
-  if (!Array.isArray(bomItems.value)) {
-    console.error("bomItems 应该是一个数组，但当前是:", typeof bomItems.value);
-    bomItems.value = []; // 如果不是数组，重新初始化为数组
-  }
-
-  console.log("添加的子项：", items); // 打印接收到的子项
-
-  // 使用 ... 扩展符添加多个项
-  bomItems.value.push(...items);  // 确保将子项添加到 bomItems 数组中
+  // 重新加载子部件数据
+  fetchBomItems();
 };
+
 
 const editBomDialogVisible = ref(false);
 const editBomData = reactive({
