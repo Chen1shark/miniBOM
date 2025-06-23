@@ -144,13 +144,13 @@ public class PartServiceImpl implements PartService {
         List<PartVO> partVOS = new ArrayList<>();
         for(PartViewDTO dto : partViewDTOs){
             PartVO item = new PartVO();
-            item.setPartId(dto.getId());
+            item.setPartId(dto.getId().toString());
             item.setName(dto.getName());
             item.setVersion(dto.getVersion() + "." + dto.getIteration());
             item.setPartType(dto.getPartType());
             item.setSource(dto.getSource());
-            item.setPartMasterId(dto.getMaster().getId());
-            item.setParBranchId(dto.getBranch().getId());
+            item.setPartMasterId(dto.getMaster().getId().toString());
+            item.setParBranchId(dto.getBranch().getId().toString());
 
             Object rawValue = dto.getExtAttrs().get(1).getValue();
             if (!(rawValue instanceof Map)) {

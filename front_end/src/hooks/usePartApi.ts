@@ -23,7 +23,7 @@ interface CreatePart {
 }
 
 interface UpdatePart {
-  masterId: string
+  masterId: BigInt
   name: string
   number: string
   source: string
@@ -36,6 +36,31 @@ interface UpdatePart {
     Size: string
     Number: string
   }
+}
+
+// 零件数据接口 - 使用BigInt类型处理大整数ID
+interface PartData {
+  partId: BigInt
+  name: string
+  version: string
+  partType: string
+  source: string
+  businessCode: string
+  partMasterId: BigInt
+  parBranchId: BigInt
+}
+
+// API响应接口
+interface ApiResponse<T> {
+  code: number
+  msg: string | null
+  data: T
+}
+
+// 零件列表响应接口
+interface PartListResponse {
+  count: number
+  list: PartData[]
 }
 
 // 通用的 API Hook 工厂函数
@@ -78,7 +103,7 @@ function createApiHook<T, R>(apiFunction: (data: T) => Promise<R>) {
 
 // 获取所有零件
 export function useGetAllParts() {
-  const parts = ref<any[]>([])
+  const parts = ref<PartData[]>([])
   const loading = ref(false)
   const error = ref<unknown | null>(null)
 
@@ -86,44 +111,26 @@ export function useGetAllParts() {
     loading.value = true
     error.value = null
     try {
-      const response = await apiGetAllpart()
+      const response: ApiResponse<PartListResponse> = await apiGetAllpart()
       console.log('API原始响应:', response)
       
-      // 尝试不同的数据结构
-      let dataArray = []
-      
-      if (response && response.data) {
-        // 情况1: response.data.data.list
-        if (response.data.data && response.data.data.list) {
-          dataArray = response.data.data.list
-          console.log('使用 response.data.data.list')
+      if (response && response.code === 1 && response.data && response.data.list) {
+        parts.value = response.data.list
+        console.log('解析后的parts:', parts.value)
+        console.log('parts长度:', parts.value.length)
+        
+        // 验证ID是否正确处理为BigInt
+        if (parts.value.length > 0) {
+          const firstItem = parts.value[3]
+          console.log('第二条数据的ID:')
+          console.log('- partId:', firstItem.partId.toString(), '(类型:', typeof firstItem.partId, ')')
+          console.log('- partMasterId:', firstItem.partMasterId.toString(), '(类型:', typeof firstItem.partMasterId, ')')
+          console.log('- parBranchId:', firstItem.parBranchId.toString(), '(类型:', typeof firstItem.parBranchId, ')')
         }
-        // 情况2: response.data.list
-        else if (response.data.list) {
-          dataArray = response.data.list
-          console.log('使用 response.data.list')
-        }
-        // 情况3: response.data 直接是数组
-        else if (Array.isArray(response.data)) {
-          dataArray = response.data
-          console.log('使用 response.data (数组)')
-        }
-        // 情况4: response.data 是对象，包含数组属性
-        else if (typeof response.data === 'object') {
-          // 查找包含数组的属性
-          for (const key in response.data) {
-            if (Array.isArray(response.data[key])) {
-              dataArray = response.data[key]
-              console.log(`使用 response.data.${key}`)
-              break
-            }
-          }
-        }
+      } else {
+        console.error('API响应格式错误:', response)
+        parts.value = []
       }
-      
-      parts.value = dataArray
-      console.log('最终解析的parts:', parts.value)
-      console.log('parts长度:', parts.value.length)
       
     } catch (err) {
       console.error('获取零件数据失败:', err)
@@ -175,7 +182,7 @@ export function usePartManagement() {
   }
 
   // 删除零件后刷新列表
-  const deletePartAndRefresh = async (masterId: string) => {
+  const deletePartAndRefresh = async (masterId: BigInt) => {
     await deletePart(masterId)
     if (deleteSuccess.value) {
       await fetchParts()

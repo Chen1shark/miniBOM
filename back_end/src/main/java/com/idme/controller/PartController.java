@@ -1,6 +1,5 @@
 package com.idme.controller;
 
-import com.huawei.innovation.rdm.coresdk.basic.dto.PersistObjectIdsModifierDTO;
 import com.idme.pojo.dto.PartUpdateDto;
 import com.idme.pojo.vo.PartVO;
 import com.idme.pojo.vo.PartVersionVO;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import com.idme.pojo.dto.PartBuildDto;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +69,6 @@ public class PartController {
         count.set(0L);
 
         List<PartVO> partVOS = partService.query(searchType, searchText, pageSize, curPage, count, isFilterOld);// 在query方法内修改值
-
         Map<String, Object> view = new HashMap<>();
         view.put("count", count.get());
         view.put("list", partVOS);

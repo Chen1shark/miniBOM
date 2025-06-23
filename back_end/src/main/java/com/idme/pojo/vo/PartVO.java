@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PartVO {
-    private Long partId; //部件编码
+    private String partId; //部件编码
 
     private String name; //部件名称
 
@@ -24,8 +24,9 @@ public class PartVO {
 
     private String businessCode; //分类编码
 
-    private Long partMasterId;
+    private String partMasterId;
 
-    private Long parBranchId;
+    private String parBranchId;
 
 }
+

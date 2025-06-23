@@ -169,8 +169,8 @@
 
     // 根据搜索条件过滤数据
     const filteredData = originalData.value.filter(item => {
-      // 确保字段存在且转换为字符串后再调用toLowerCase()
-      const itemPartId = item.partId ? String(item.partId) : ''
+      // 处理BigInt类型的partId，转换为字符串进行搜索
+      const itemPartId = item.partId ? item.partId.toString() : ''
       const itemName = item.name ? String(item.name) : ''
       
       const matchPartCode = !partCode || itemPartId.toLowerCase().includes(partCode.toLowerCase())
@@ -211,13 +211,15 @@
 
   // 删除方法
   const handleDelete = (row) => {
+
+    console.log('partMasterId:', row.partMasterId.toString(), typeof row.partMasterId);
     ElMessageBox.confirm('确定要删除该零件吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     }).then(async () => {
       try {
-        const partMasterId = row.partMasterId || row.id
+        const partMasterId = row.partMasterId 
         
         if (!partMasterId) {
           ElMessage.error('无法获取零件ID')

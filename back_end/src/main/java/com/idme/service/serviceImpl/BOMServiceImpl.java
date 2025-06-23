@@ -381,10 +381,10 @@ public class BOMServiceImpl implements BOMService {
 
             //获取partMasterId
             PartVO partVO = partService.query("id", partId.toString(), 1, 1, count, true).get(0);
-            Long partMasterId = partVO.getPartMasterId();
-
+            String partMasterId = partVO.getPartMasterId();
+            Long partMId = Long.parseLong(partMasterId);
             //用target查BOMLink
-            List<Long> list = getSourceId(partMasterId);
+            List<Long> list = getSourceId(partMId);
             if(list.isEmpty()){
                 topPartIds.add(partId);
             }
@@ -415,9 +415,10 @@ public class BOMServiceImpl implements BOMService {
         PartVO partVO = partService.query("id", partId.toString(), 1, 1, count, true).get(0);
 
         //构建当前节点
+        Long partMId = Long.parseLong(partVO.getPartMasterId());
         BOMNodeVO node = BOMNodeVO.builder()
                 .partId(partId)
-                .partMasterId(partVO.getPartMasterId())
+                .partMasterId(partMId)
                 .name(partVO.getName())
                 .children(new ArrayList<>())
                 .build();
