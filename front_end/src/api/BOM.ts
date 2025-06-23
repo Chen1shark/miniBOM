@@ -39,3 +39,20 @@ export function apiBomChecklist() {
     method: 'get',
   })
 }
+
+// 4. 创建BOM接口参数类型
+export interface BomCreateParam {
+  sourceId: number
+  targetId: number
+  quantity: number
+  referenceDesignator: string
+}
+
+// 创建BOM
+export function apiBomCreate(param: BomCreateParam) {
+  return httpRequest({
+    url: '/bom/add',
+    method: 'post',
+    data: param,
+  })
+}

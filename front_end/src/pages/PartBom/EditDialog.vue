@@ -145,6 +145,7 @@
     <!-- 新增子项组件 -->
     <AddPartDialog
       :visible="addPartDialogVisible"
+      :parentId="formData.masterId || props.rowData.partId"
       @update:visible="v => (addPartDialogVisible = v)"
       @add="addParts"
     />
@@ -156,7 +157,7 @@ import { ref, reactive, watch, computed, onMounted } from 'vue'
 import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
-import { apiBomChecklist, apiBomUpdate, apiBomDelete } from '@/api/BOM'
+import { apiBomChecklist, apiBomUpdate, apiBomDelete,apiBomCreate } from '@/api/BOM'
 
 // ---------- props & emit ----------
 const props = defineProps({
@@ -309,8 +310,10 @@ watch(
 
 // ---------- 工具栏按钮 ----------
 const showAddPartDialog = () => {
+  console.log('当前父部件ID:', props.rowData.partId)
   addPartDialogVisible.value = true
 }
+
 const showBomDialog = () => {
   bomDialogVisible.value = true
 }
@@ -318,10 +321,6 @@ const showParentDialog = () => {
   parentDialogVisible.value = true
 }
 
-// ---------- BOM 子项增/删 ----------
-const addParts = (items) => {
-  bomItems.value.push(...items)
-}
 
 // ---------- API hook ----------
 const { execute: updatePart, loading } = useUpdatePart()
@@ -367,6 +366,14 @@ const fetchBomItems = async () => {
     console.error('获取BOM清单失败:', error);
   }
 };
+
+// ---------- BOM 子项增/删 ----------
+const addParts = (items) => {
+  console.log("添加的子项：", items); // 打印接收到的子项
+  bomItems.value.push(...items); // 将子项添加到 BOM 清单中
+};
+
+
 
 // 更新BOM项
 const onBomChange = async (row) => {
