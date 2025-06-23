@@ -16,7 +16,7 @@ public class BOMVO {
 
     private String referenceDesignator;//位号
 
-    private Long partId; //部件编码
+    private String partId; //部件编码
 
     private String name; //部件名称
 
@@ -28,7 +28,7 @@ public class BOMVO {
 
     private String businessCode; //分类编码
 
-    private Long partMasterId;
+    private String partMasterId;
 
-    private Long parBranchId;
+    private String parBranchId;
 }
