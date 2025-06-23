@@ -67,19 +67,25 @@
           <el-button @click="showParentDialog">查看父项</el-button>
         </div>
 
-        <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
+       <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
   <el-table-column prop="code" label="编码" width="160" />
   <el-table-column prop="name" label="名称" />
+  
+  <!-- 数量列 - 去掉加减号，只显示数据 -->
   <el-table-column label="数量" width="120">
     <template #default="{ row }">
-      <el-input-number v-model="row.quantity" :min="1" readonly />
+      <span>{{ row.quantity }}</span>  <!-- 只显示数量，去掉输入框 -->
     </template>
   </el-table-column>
+
+  <!-- 位号列 - 去掉输入框，只显示数据 -->
   <el-table-column label="位号" width="160">
     <template #default="{ row }">
-      <el-input v-model="row.position" readonly />
+      <span>{{ row.position }}</span>  <!-- 只显示位号，去掉输入框 -->
     </template>
   </el-table-column>
+
+  <!-- 操作列 -->
   <el-table-column label="操作" width="200" align="center">
     <template #default="{ $index, row }">
       <el-button type="primary" @click="showEditBomDialog(row)">修改</el-button>
@@ -87,6 +93,7 @@
     </template>
   </el-table-column>
 </el-table>
+
 
       </el-tab-pane>
 
@@ -177,7 +184,7 @@ import { ref, reactive, watch, computed, onMounted } from 'vue'
 import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
-import { apiBomChecklist, apiBomUpdate, apiBomDelete,apiBomCreate } from '@/api/BOM'
+import { apiBomChecklist, apiBomUpdate, apiBomDelete,apiBomCreate,apiParentPartQuery } from '@/api/BOM'
 import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
 
 // ---------- props & emit ----------
@@ -256,6 +263,10 @@ watch(
       formData.parentPart = ''
       formData.quantity = 1
       formData.notes = ''
+
+       // 获取 BOM 子项并更新到表格
+      fetchBomItems()  // 获取并更新 bomItems 数据
+
       // 再用rowData回填
       Object.keys(formData).forEach(key => {
         if (props.rowData && props.rowData[key] !== undefined) {
@@ -323,6 +334,21 @@ const handleSave = async () => {
 
 // 响应式数据
 const bomItems = ref([]);
+
+const fetchBomItems = async () => {
+  try {
+    const parentPartId = props.rowData.partId  // 获取父部件的 partId
+    const response = await apiParentPartQuery({ parentPartId })  // 调用接口获取子部件数据
+    console.log(response.data);  // 打印返回的数据，检查是否包含编码、数量和位号
+    bomItems.value = response.data || []  // 更新 bomItems，这样表格就会显示新数据
+  } catch (error) {
+    console.error('获取子部件数据失败:', error)
+    ElMessage.error('获取子部件数据失败')
+  }
+}
+
+
+
 
 // ---------- BOM 子项增/删 ----------
 const addParts = (items) => {

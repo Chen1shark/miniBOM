@@ -56,3 +56,36 @@ export function apiBomCreate(param: BomCreateParam) {
     data: param,
   })
 }
+
+
+// 1. 根据子 partMasterId 查询父部件接口参数类型
+export interface PartMasterQueryParam {
+  partMasterId: number
+}
+
+// 根据子 partMasterId 查询父部件
+export function apiPartMasterQuery(param: PartMasterQueryParam) {
+  return httpRequest({
+    url: `/bom/target/${param.partMasterId}`,
+    method: 'get',
+    headers: {
+      'token': 'your_token_here', // 这里替换为实际的 token
+    },
+  })
+}
+
+// 2. 根据父 partId 查询子部件接口参数类型
+export interface ParentPartQueryParam {
+  parentPartId: number
+}
+
+// 根据父 partId 查询子部件
+export function apiParentPartQuery(param: ParentPartQueryParam) {
+  return httpRequest({
+    url: `/bom/source/${param.parentPartId}`,
+    method: 'get',
+    headers: {
+      'token': 'your_token_here', // 这里替换为实际的 token
+    },
+  })
+}
