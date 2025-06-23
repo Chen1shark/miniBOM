@@ -67,24 +67,26 @@
         </div>
 
         <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
-    <el-table-column prop="code" label="编码" width="160" />
-    <el-table-column prop="name" label="名称" />
-    <el-table-column label="数量" width="120">
-      <template #default="{ row }">
-        <el-input-number v-model="row.quantity" :min="1" @change="onBomChange(row)" />
-      </template>
-    </el-table-column>
-    <el-table-column label="位号" width="160">
-      <template #default="{ row }">
-        <el-input v-model="row.position" @input="onBomChange(row)" />
-      </template>
-    </el-table-column>
-    <el-table-column label="操作" width="100" align="center">
-      <template #default="{ $index }">
-        <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
-      </template>
-    </el-table-column>
-  </el-table>
+  <el-table-column prop="code" label="编码" width="160" />
+  <el-table-column prop="name" label="名称" />
+  <el-table-column label="数量" width="120">
+    <template #default="{ row }">
+      <el-input-number v-model="row.quantity" :min="1" readonly />
+    </template>
+  </el-table-column>
+  <el-table-column label="位号" width="160">
+    <template #default="{ row }">
+      <el-input v-model="row.position" readonly />
+    </template>
+  </el-table-column>
+  <el-table-column label="操作" width="200" align="center">
+    <template #default="{ $index, row }">
+      <el-button type="primary" @click="showEditBomDialog(row)">修改</el-button>
+      <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
+    </template>
+  </el-table-column>
+</el-table>
+
       </el-tab-pane>
 
       <!-- 版本管理 -->
@@ -141,6 +143,23 @@
         <el-descriptions-item label="父级零件">{{ formData.parentPart }}</el-descriptions-item>
       </el-descriptions>
     </el-dialog>
+
+    <!-- 修改 BOM 项弹窗 -->
+<el-dialog v-model="editBomDialogVisible" title="修改 BOM 项" width="30%">
+  <el-form :model="editBomData" label-width="120px">
+    <el-form-item label="数量">
+      <el-input-number v-model="editBomData.quantity" :min="1" />
+    </el-form-item>
+    <el-form-item label="位号">
+      <el-input v-model="editBomData.position" />
+    </el-form-item>
+  </el-form>
+  <template #footer>
+    <el-button @click="editBomDialogVisible = false">取消</el-button>
+    <el-button type="primary" @click="handleEditBomSave">保存</el-button>
+  </template>
+</el-dialog>
+
 
     <!-- 新增子项组件 -->
     <AddPartDialog
@@ -357,55 +376,55 @@ const handleSave = async () => {
 // 响应式数据
 const bomItems = ref([]);
 
-// 获取BOM清单
-const fetchBomItems = async () => {
-  try {
-    const response = await apiBomChecklist();
-    bomItems.value = response.data; // 假设接口返回的数据格式是 { data: [...] }
-  } catch (error) {
-    console.error('获取BOM清单失败:', error);
-  }
-};
-
 // ---------- BOM 子项增/删 ----------
 const addParts = (items) => {
+  // 确保 bomItems 是一个数组
+  if (!Array.isArray(bomItems.value)) {
+    console.error("bomItems 应该是一个数组，但当前是:", typeof bomItems.value);
+    bomItems.value = []; // 如果不是数组，重新初始化为数组
+  }
+
   console.log("添加的子项：", items); // 打印接收到的子项
-  bomItems.value.push(...items); // 将子项添加到 BOM 清单中
+
+  // 使用 ... 扩展符添加多个项
+  bomItems.value.push(...items);  // 确保将子项添加到 bomItems 数组中
 };
 
+const editBomDialogVisible = ref(false);
+const editBomData = reactive({
+  quantity: 1,
+  position: ''
+});
 
+// 显示修改 BOM 弹窗
+const showEditBomDialog = (row) => {
+  // 先将选中的 BOM 数据填充到修改表单
+  editBomData.quantity = row.quantity;
+  editBomData.position = row.position;
+  editBomDialogVisible.value = true;
+};
 
-// 更新BOM项
-const onBomChange = async (row) => {
+// 保存修改的 BOM 项
+const handleEditBomSave = async () => {
   try {
+    // 假设有一个 API 接口用于更新 BOM 项
     const param = {
-      bomLinkId: row.bomLinkId, // 假设每个 BOM 项都有 bomLinkId
-      quantity: row.quantity,
-      referenceDesignator: row.position,
+      bomLinkId: editBomData.bomLinkId, // 获取 bomLinkId
+      quantity: editBomData.quantity,
+      referenceDesignator: editBomData.position
     };
     await apiBomUpdate(param); // 调用更新接口
-    console.log('BOM项已更新');
+    ElMessage.success('BOM项已更新');
+    editBomDialogVisible.value = false;
+    // 需要更新 BOM 项数据
+    fetchBomItems();
   } catch (error) {
     console.error('更新BOM项失败:', error);
   }
 };
 
-// 删除BOM项
-const removeBomItem = async (index) => {
-  try {
-    const param = { ids: [bomItems.value[index].bomLinkId] }; // 获取bomLinkId
-    await apiBomDelete(param); // 调用删除接口
-    bomItems.value.splice(index, 1); // 从数据中删除
-    console.log('BOM项已删除');
-  } catch (error) {
-    console.error('删除BOM项失败:', error);
-  }
-};
 
-// 在组件挂载后获取BOM清单
-onMounted(() => {
-  fetchBomItems();
-});
+
 
 </script>
 
