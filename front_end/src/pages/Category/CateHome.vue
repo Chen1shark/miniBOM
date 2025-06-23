@@ -69,6 +69,7 @@ const fetchCategoryTreeData = async () => {
     
     // 获取所有分类数据
     const response = await apiCateGet(1, 1000, '', '', '');
+    console.log('response', response);
     
     if (response && response.code === 1 && response.data && response.data.records) {
       // 构建树状结构
