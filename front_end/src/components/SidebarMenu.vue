@@ -1,25 +1,25 @@
 <template>
   <div class="sidebar">
     <div class="menu-group">
-      <h3>属性管理</h3>
+      <!-- <h3>属性管理</h3> -->
       
-      <button @click="$router.push('/Home/attribute/create')">📌 创建属性</button>
+      <!-- <button @click="$router.push('/Home/attribute/create')">📌 创建属性</button>
       <button @click="$router.push('/Home/attribute/edit')">✏️ 修改属性</button>
-      <button @click="$router.push('/Home/attribute/delete')">🗑️ 删除属性</button>
-      <button @click="$router.push('/Home/attribute/query')">🔍 查询属性</button>
+      <button @click="$router.push('/Home/attribute/delete')">🗑️ 删除属性</button> -->
+      <button @click="$router.push('/Home/attribute/query')">📌 属性管理</button>
     </div>
 
     <div class="menu-group">
-      <h3>分类管理</h3>
-      <button @click="$router.push('/Home/category/create')">📌 创建分类模板</button>
+      <!-- <h3>分类管理</h3> -->
+      <!-- <button @click="$router.push('/Home/category/create')">📌 创建分类模板</button>
       <button @click="$router.push('/Home/category/edit')">✏️ 修改分类模板</button>
-      <button @click="$router.push('/Home/category/generate')">📎 作成分类模板</button>
-      <button @click="$router.push('/Home/category/query-one')">🔍 查询单个分类</button>
+      <button @click="$router.push('/Home/category/generate')">📎 作成分类模板</button> -->
+      <button @click="$router.push('/Home/category/query-one')">🔍 分类管理</button>
       <button @click="$emit('showCategoryTree')">📚 查看分类树</button>
     </div>
 
     <div class="menu-group">
-      <button @click="$router.push('/Home/part/basicShow')">Part & BOM管理</button>
+      <button @click="$router.push('/Home/part/basicShow')">📎 Part & BOM管理</button>
     </div>
   </div>
 </template>
