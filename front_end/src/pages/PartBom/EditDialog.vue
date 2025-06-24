@@ -161,7 +161,7 @@
       <template #footer>
         <span class="dialog-footer"> <!-- 判断当前选中的 tab -->
           <el-button @click="handleClose">取消</el-button>
-          <el-button type="primary" @click="handleSave">保存</el-button>
+          <el-button type="primary" @click="handleEditBomSave">保存</el-button>
         </span>
       </template>
     </el-dialog>
