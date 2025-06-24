@@ -61,19 +61,12 @@
       </el-tab-pane>
 
       <el-tab-pane label="扩展属性" name="extended">
-        <el-form :model="formData" label-width="120px">
-          <el-form-item label="重量">
-            <el-input v-model="formData.weight" />
-          </el-form-item>
-          <el-form-item label="高度/厚度">
-            <el-input v-model="formData.height" />
-          </el-form-item>
-          <el-form-item label="宽度">
-            <el-input v-model="formData.width" />
-          </el-form-item>
-          <el-form-item label="长度">
-            <el-input v-model="formData.length" />
-          </el-form-item>
+        <el-form :model="formData.extendedAttrs" label-width="120px">
+          <template v-for="attr in extendedAttributes" :key="attr.id">
+            <el-form-item :label="attr.name">
+              <el-input v-model="formData.extendedAttrs[attr.nameEn]" :placeholder="attr.description || attr.name" />
+            </el-form-item>
+          </template>
         </el-form>
       </el-tab-pane>
     </el-tabs>
@@ -92,7 +85,7 @@ import { ref, reactive, watch } from 'vue'
 import { useCreatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
 import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
-const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading } = useCategoryTreeInPart()
+const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading, fetchCategoryAttribute } = useCategoryTreeInPart()
 
 // 定义props接收父组件传递的数据
 const props = defineProps({
@@ -118,11 +111,10 @@ const formData = reactive({
   assemblyMode: '',
   categoryCode: '',
   source: '',
-  weight: '',
-  height: '',
-  width: '',
-  length: ''
+  extendedAttrs: {} // 用于存储扩展属性的值
 })
+
+const extendedAttributes = ref([])
 
 // 监听visible属性变化
 watch(() => props.visible, (newVal) => {
@@ -132,6 +124,35 @@ watch(() => props.visible, (newVal) => {
     Object.keys(formData).forEach(key => {
       formData[key] = ''
     })
+    // 弹窗打开时主动触发一次扩展属性获取
+    if (formData.categoryCode) {
+      fetchCategoryAttribute(formData.categoryCode).then(attrs => {
+        extendedAttributes.value = attrs || []
+        formData.extendedAttrs = {}
+        extendedAttributes.value.forEach(attr => {
+          formData.extendedAttrs[attr.nameEn] = ''
+        })
+      })
+    } else {
+      extendedAttributes.value = []
+      formData.extendedAttrs = {}
+    }
+  }
+})
+
+// 监听分类选择变化，动态获取扩展属性
+watch(() => formData.categoryCode, async (newVal) => {
+  if (newVal) {
+    const attrs = await fetchCategoryAttribute(newVal)
+    extendedAttributes.value = attrs || []
+    // 初始化扩展属性对象
+    formData.extendedAttrs = {}
+    extendedAttributes.value.forEach(attr => {
+      formData.extendedAttrs[attr.nameEn] = ''
+    })
+  } else {
+    extendedAttributes.value = []
+    formData.extendedAttrs = {}
   }
 })
 
@@ -152,13 +173,7 @@ const handleSave = async () => {
       source: formData.source,
       partType: formData.assemblyMode,
       categoryId: formData.categoryCode.toString(),
-      clsAttrs: {
-        height: formData.height,
-        Brand: formData.width, // 可根据实际表单补充
-        Weight: formData.weight,
-        Size: '0', // 可根据实际表单补充
-        Number: '0' // 可根据实际表单补充
-      }
+      clsAttrs: formData.extendedAttrs // 提交扩展属性
     })
     ElMessage.success('添加成功')
     emit('save')

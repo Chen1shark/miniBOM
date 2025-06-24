@@ -43,6 +43,16 @@
               :props="{ label: 'name', children: 'children', value: 'id' }" check-strictly node-key="id"
               default-expand-all :loading="categoryTreeLoading" />
           </el-form-item>
+          <el-form-item label="拓展属性">
+            <template v-for="attr in extendedAttributes" :key="attr.id">
+            <el-form-item :label="attr.name">
+              <el-input v-if="attr.type === 'STRING'" v-model="formData.extendedAttrs[attr.nameEn]" :placeholder="attr.description || attr.name" />
+              <el-input v-else-if="attr.type === 'DECIMAL'" v-model.number="formData.extendedAttrs[attr.nameEn]" :placeholder="attr.description || attr.name" />
+              <!-- 可扩展更多类型，如下拉、日期等 -->
+            </el-form-item>
+          </template>
+          </el-form-item>
+     
         </el-form>
       </el-tab-pane>
 
@@ -180,7 +190,7 @@ import { ElMessage } from 'element-plus'
 import { apiBomChecklist, apiBomUpdate, apiBomDelete, apiPartMasterQuery, apiParentPartQuery } from '@/api/BOM'
 import { apiVersionQuery, apiPartDelete } from '@/api/partVer'
 import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
-
+const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading, fetchCategoryAttribute } = useCategoryTreeInPart()
 // ---------- props & emit ----------
 const props = defineProps({
   visible: {
@@ -207,20 +217,27 @@ const formData = reactive({
   source: '',
   assemblyMode: '',
   categoryCode: '',
-  weight: '',
-  height: '',
-  width: '',
-  length: '',
-  description: '',
-  material: '',
-  specification: '',
-  unit: '',
-  parentPart: '',
-  quantity: 1,
-  notes: ''
+  extendedAttrs: {} // 用于存储扩展属性的值
 })
 
-const { categoryTree, fetchCategoryTreeData, loading: categoryTreeLoading } = useCategoryTreeInPart()
+
+const extendedAttributes = ref([])
+
+// 监听分类选择变化，动态获取扩展属性
+watch(() => formData.categoryCode, async (newVal) => {
+  if (newVal) {
+    const attrs = await fetchCategoryAttribute(newVal)
+    extendedAttributes.value = attrs || []
+    // 初始化扩展属性对象
+    formData.extendedAttrs = {}
+    extendedAttributes.value.forEach(attr => {
+      formData.extendedAttrs[attr.nameEn] = ''
+    })
+  } else {
+    extendedAttributes.value = []
+    formData.extendedAttrs = {}
+  }
+})
 
 // ---------- 计算属性：树数据 ----------
 const bomTree = computed(() => bomItems.value)
@@ -246,18 +263,6 @@ watch(
       formData.source = props.rowData.source
       formData.assemblyMode = props.rowData.assemblyMode
       formData.categoryCode = props.rowData.categoryCode
-      formData.weight = props.rowData.weight
-      formData.height = props.rowData.height
-      formData.width = ''
-      formData.length = ''
-      formData.description = ''
-      formData.material = ''
-      formData.specification = ''
-      formData.unit = ''
-      formData.parentPart = ''
-      formData.quantity = 1
-      formData.notes = ''
-
       // 获取 BOM 子项并更新到表格
       fetchBomItems()  // 获取并更新 bomItems 数据
 
@@ -269,6 +274,20 @@ watch(
           formData[key] = props.rowData[key]
         }
       })
+
+         // 弹窗打开时主动触发一次扩展属性获取
+    if (formData.categoryCode) {
+      fetchCategoryAttribute(formData.categoryCode).then(attrs => {
+        extendedAttributes.value = attrs || []
+        formData.extendedAttrs = {}
+        extendedAttributes.value.forEach(attr => {
+          formData.extendedAttrs[attr.nameEn] = ''
+        })
+      })
+    } else {
+      extendedAttributes.value = []
+      formData.extendedAttrs = {}
+    }
 
       bomItems.value = props.rowData?.bomItems ? [...props.rowData.bomItems] : []
     }
@@ -319,13 +338,7 @@ const handleSave = async () => {
       source: formData.source,
       partType: formData.assemblyMode,
       categoryId: formData.categoryCode.toString(),
-      clsAttrs: {
-        height: formData.height,
-        Brand: formData.width, // 可根据实际表单补充
-        Weight: formData.weight,
-        Size: '0', // 可根据实际表单补充
-        Number: '0' // 可根据实际表单补充
-      }
+      clsAttrs: formData.extendedAttrs // 提交扩展属性
     })
     ElMessage.success('编辑成功')
     emit('save')

@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { apiCateGet } from '@/api/CateGet'
+import { apiCateQueryAttribute } from '@/api/CateQueryAttribute'
 import { ElMessage } from 'element-plus'
 
 export function useCategoryTreeInPart() {
@@ -45,9 +46,25 @@ export function useCategoryTreeInPart() {
         loading.value = false
       }
     }
-  
-    return { categoryTree, loading, fetchCategoryTreeData }
 
+    // 查询分类属性，传入categoryId，返回属性数据
+    const fetchCategoryAttribute = async (categoryId) => {
+        try {
+            const response = await apiCateQueryAttribute(categoryId)
+            console.log('这是part中对分类属性的response', response);
+            console.log('这是part中对分类属性的categoryId', categoryId);
+            if (response ) {
+                console.log('这是part中对分类属性的response.data', response.data);
+                return response // 返回属性数据
+            } else {
+                ElMessage.error('获取分类属性失败')
+                return null
+            }
+        } catch (e) {
+            ElMessage.error('获取分类属性失败')
+            return null
+        }
+    }
 
-
+    return { categoryTree, loading, fetchCategoryTreeData, fetchCategoryAttribute }
 }
