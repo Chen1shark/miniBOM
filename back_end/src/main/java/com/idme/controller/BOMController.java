@@ -82,6 +82,7 @@ public class BOMController {
             PartVersionVO partVersionVO = partService.versionQuery(bomLinkDetail.getTargetId(), 1, 1, true).get(0);
             String referenceDesignator = bomService.getReferenceDesignator(bomLinkDetail.getBomLinkId());
 
+
             // 声明为可变容器类型
             AtomicLong count = new AtomicLong(0L);
             count.set(0L);

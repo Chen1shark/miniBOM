@@ -265,6 +265,7 @@ public class BOMServiceImpl implements BOMService {
                     //设置targetId（从target对象获取）
                     if(dataItem.containsKey("target")) {
                         Object targetObj = dataItem.get("target");
+
                         if(targetObj instanceof Map) {
                             Map<?,?> targetMap = (Map<?,?>) targetObj;
                             Object targetIdObj = targetMap.get("id");
@@ -279,6 +280,7 @@ public class BOMServiceImpl implements BOMService {
                             }
                         }
                     }
+
 
                     return dto;
                 })
@@ -297,10 +299,10 @@ public class BOMServiceImpl implements BOMService {
         RDMPageVO rdmPageVO=new RDMPageVO();
 
         queryRequestVo.addCondition("bomLink.id", ConditionType.EQUAL, bomLinkId);
-
         rdmPageVO.setCurPage(1);
         rdmPageVO.setPageSize(1);
 
+        log.info("这是{}：",bomLinkId);
         List<BOMUsesOccurrenceViewDTO> bomUsesOccurrenceViewDTOS = bomUsesOccurrenceDelegator.find(queryRequestVo, rdmPageVO);
 
         return bomUsesOccurrenceViewDTOS.get(0).getReferenceDesignator();

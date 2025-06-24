@@ -19,5 +19,6 @@ public class MessageConstant {
 
     public static final String CATEGORY_NOT_FOUND = "分类未找到";
 
+    public static final String PART_CANNOT_BE_UPDATE = "part有子类，不能更新";
 
 }

@@ -3,7 +3,6 @@ package com.idme.service.serviceImpl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.huawei.innovation.rdm.coresdk.basic.dto.*;
-import com.huawei.innovation.rdm.coresdk.basic.enums.ConditionType;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryCondition;
 import com.huawei.innovation.rdm.coresdk.basic.vo.QueryRequestVo;
 import com.huawei.innovation.rdm.coresdk.basic.vo.RDMPageVO;
@@ -11,13 +10,17 @@ import com.huawei.innovation.rdm.coresdk.extattrmgmt.dto.EXAValueParamDTO;
 import com.huawei.innovation.rdm.minibom.delegator.PartDelegator;
 import com.huawei.innovation.rdm.minibom.dto.entity.*;
 import com.huawei.innovation.rdm.xdm.delegator.ClassificationNodeDelegator;
-import com.idme.constant.AttributeConstant;
+import com.idme.constant.MessageConstant;
+import com.idme.exception.PartCannotBeUpdateException;
+import com.idme.pojo.dto.BOMLinkSimpleDto;
 import com.idme.pojo.dto.PartBuildDto;
 import com.idme.pojo.dto.PartUpdateDto;
 import com.idme.pojo.vo.PartVO;
 import com.idme.pojo.vo.PartVersionVO;
+import com.idme.service.BOMService;
 import com.idme.service.PartService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -25,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Condition;
 
 @Service
 public class PartServiceImpl implements PartService {
@@ -35,6 +37,10 @@ public class PartServiceImpl implements PartService {
 
     @Autowired
     private ClassificationNodeDelegator classificationNodeDelegator;
+
+    @Autowired
+    @Lazy
+    private BOMService bomService;
 
     public Long createPart(PartBuildDto partBuildDto) {
         //1.创建所需对象
@@ -76,6 +82,15 @@ public class PartServiceImpl implements PartService {
      * @return version
      */
     public Long updatePart(PartUpdateDto partUpdateDto) {
+        //前置判断处理：若part有子part，则无法更新
+        List<PartVersionVO> partVersionVOS = versionQuery(partUpdateDto.getMasterId(), 1, 1, true);
+        PartVersionVO partVersionVO = partVersionVOS.get(0);
+
+        List<BOMLinkSimpleDto> bomLinkDetails = bomService.getBOMLinkDetails(partVersionVO.getPartId());
+        if(bomLinkDetails!=null){
+            throw new PartCannotBeUpdateException(MessageConstant.PART_CANNOT_BE_UPDATE);
+        }
+
 
         //1.根据MasterId检出
         Long partId = checkOutPart(partUpdateDto.getMasterId());
