@@ -85,19 +85,29 @@
         </el-table>
       </el-tab-pane>
 
-      <!-- 版本管理 -->
       <el-tab-pane label="版本管理" name="version">
-        <el-form :model="formData" label-width="120px">
-          <el-form-item label="父级零件">
-            <el-input v-model="formData.parentPart" />
-          </el-form-item>
-          <el-form-item label="数量">
-            <el-input-number v-model="formData.quantity" :min="1" />
-          </el-form-item>
-          <el-form-item label="备注">
-            <el-input type="textarea" v-model="formData.notes" />
-          </el-form-item>
-        </el-form>
+        <el-table :data="versionList" border style="width: 100%" highlight-current-row>
+          <el-table-column label="编码" width="260">
+            <template #default="{ row }">
+              <span>{{ row.partId }}</span> <!-- 显示 partId 作为编码 -->
+            </template>
+          </el-table-column>
+          <el-table-column label="版本号">
+            <template #default="{ row }">
+              <span>{{ row.version }}</span> <!-- 显示版本号 -->
+            </template>
+          </el-table-column>
+          <el-table-column label="名称" width="160">
+            <template #default="{ row }">
+              <span>{{ row.name }}</span> <!-- 显示名称 -->
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="200" align="center">
+            <template #default="{ $index, row }">
+              <el-button type="danger" link @click="handleDeleteVersion(row.partId)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-tab-pane>
     </el-tabs>
 
@@ -109,22 +119,17 @@
       </span>
     </template>
 
-     <el-dialog v-model="bomDialogVisible" title="BOM清单" width="60%">
-    <el-tree
-      :data="bomTreeData"  
-      node-key="partId"    
-      default-expand-all   
-      :props="{ children: 'children' }" 
-      class="bom-tree"
-    >
-      <template #default="{ node }">
-        <span class="col-code">{{ node.data.partId }}</span>
-        <span class="col-name">{{ node.data.name }}</span>
-        <span class="col-qty">{{ node.data.quantity }}</span>
-        <span class="col-pos">{{ node.data.position }}</span>
-      </template>
-    </el-tree>
-  </el-dialog>
+    <el-dialog v-model="bomDialogVisible" title="BOM清单" width="60%">
+      <el-tree :data="bomTreeData" node-key="partId" default-expand-all :props="{ children: 'children' }"
+        class="bom-tree">
+        <template #default="{ node }">
+          <span class="col-code">{{ node.data.partId }}</span>
+          <span class="col-name">{{ node.data.name }}</span>
+          <span class="col-qty">{{ node.data.quantity }}</span>
+          <span class="col-pos">{{ node.data.position }}</span>
+        </template>
+      </el-tree>
+    </el-dialog>
 
     <!-- 查看父项弹窗 -->
     <el-dialog v-model="parentDialogVisible" title="父项" width="60%">
@@ -165,6 +170,7 @@ import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
 import { apiBomChecklist, apiBomUpdate, apiBomDelete, apiPartMasterQuery, apiParentPartQuery } from '@/api/BOM'
+import { apiVersionQuery, apiPartDelete } from '@/api/partVer'
 import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
 
 // ---------- props & emit ----------
@@ -258,6 +264,15 @@ watch(
     }
   }
 )
+
+watch(
+  () => activeTab.value,
+  (newTab) => {
+    if (newTab === 'version') {
+      fetchVersions(props.rowData.partMasterId);  // 每次切换到版本管理 tab 时都重新获取数据
+    }
+  }
+);
 
 // ---------- 工具栏按钮 ----------
 const showAddPartDialog = () => {
@@ -434,6 +449,58 @@ const showBomDialog = async () => {
   await fetchBomChecklist()  // 调用接口获取数据
   bomDialogVisible.value = true  // 打开弹窗
 }
+
+//版本管理部分
+const versionList = ref([])  // 存储版本数据
+
+const fetchVersions = async (masterId) => {
+  const someId = 10;  // 可能是固定的 ID，根据需求调整
+  const anotherId = 1;  // 可能是固定的 ID，根据需求调整
+
+  try {
+    const response = await apiVersionQuery({ masterId, someId, anotherId });
+    if (response.code === 1) {
+      versionList.value = response.data.list || []
+    } else {
+      ElMessage.error('获取版本数据失败')
+    }
+  } catch (error) {
+    console.error('获取版本数据失败:', error.response || error);
+    ElMessage.error('获取版本数据失败');
+  }
+}
+
+onMounted(() => {
+  if (props.rowData?.partMasterId) {
+    fetchVersions(props.rowData.partMasterId)  // 通过 partMasterId 获取版本数据
+  }
+})
+
+// 修改版本管理中的删除按钮处理函数
+const handleDeleteVersion = async (partId) => {
+  try {
+    // 将 partId 转为字符串（如果是 BigInt）
+    const partIdString = partId.toString();
+
+    // 调用删除接口，传递 masterId
+    const response = await apiPartDelete({ masterId: partIdString });
+
+    if (response.code === 1) {
+      // 删除成功后，从版本列表中移除该项
+      versionList.value = versionList.value.filter(item => item.partId !== partIdString);
+      ElMessage.success('版本已删除');
+
+      // 删除后重新获取最新的版本数据
+      fetchVersions(props.rowData.partMasterId);
+    } else {
+      ElMessage.error('删除失败');
+    }
+  } catch (error) {
+    console.error('删除版本失败:', error);
+    ElMessage.error('删除版本失败');
+  }
+};
+
 
 
 
