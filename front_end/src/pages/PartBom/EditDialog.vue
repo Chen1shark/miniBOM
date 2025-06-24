@@ -104,7 +104,13 @@
           </el-table-column>
           <el-table-column label="操作" width="200" align="center">
             <template #default="{ $index, row }">
-              <el-button type="danger" link @click="handleDeleteVersion(row.partId)">删除</el-button>
+              <!-- 只有第一项（即最新版本）显示删除按钮 -->
+              <el-button v-if="$index === 0"
+                type="danger"
+                link
+                @click="handleDeleteVersion(row.partId)">
+                删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -113,7 +119,7 @@
 
     <!-- 主弹窗 footer -->
     <template #footer>
-      <span class="dialog-footer">
+      <span class="dialog-footer" v-if="activeTab === 'basic'"> <!-- 判断当前选中的 tab -->
         <el-button @click="handleClose">取消</el-button>
         <el-button type="primary" @click="handleSave">保存</el-button>
       </span>
@@ -153,8 +159,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editBomDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleEditBomSave">保存</el-button>
+        <span class="dialog-footer"> <!-- 判断当前选中的 tab -->
+          <el-button @click="handleClose">取消</el-button>
+          <el-button type="primary" @click="handleSave">保存</el-button>
+        </span>
       </template>
     </el-dialog>
 
@@ -253,6 +261,8 @@ watch(
       // 获取 BOM 子项并更新到表格
       fetchBomItems()  // 获取并更新 bomItems 数据
 
+      activeTab.value = 'basic';
+
       // 再用rowData回填
       Object.keys(formData).forEach(key => {
         if (props.rowData && props.rowData[key] !== undefined) {
@@ -273,6 +283,14 @@ watch(
     }
   }
 );
+
+watch(
+  () => activeTab,
+  (newVal) => {
+    console.log("当前选中的 tab:", newVal);  // 打印当前选中的 tab，用于调试
+  }
+);
+
 
 // ---------- 工具栏按钮 ----------
 const showAddPartDialog = () => {
@@ -476,18 +494,20 @@ onMounted(() => {
   }
 })
 
-// 修改版本管理中的删除按钮处理函数
 const handleDeleteVersion = async (partId) => {
   try {
-    // 将 partId 转为字符串（如果是 BigInt）
-    const partIdString = partId.toString();
+    // 获取 part 对应的 masterId
+    const masterId = props.rowData.partMasterId;  // 假设 masterId 在 rowData 中
+
+    // 打印发送到后端的 masterId，以便在浏览器控制台查看
+    console.log("Sending masterId to backend:", masterId);  // 在控制台输出 masterId
 
     // 调用删除接口，传递 masterId
-    const response = await apiPartDelete({ masterId: partIdString });
+    const response = await apiPartDelete({ masterId: masterId.toString() });
 
     if (response.code === 1) {
       // 删除成功后，从版本列表中移除该项
-      versionList.value = versionList.value.filter(item => item.partId !== partIdString);
+      versionList.value = versionList.value.filter(item => item.partId !== partId);
       ElMessage.success('版本已删除');
 
       // 删除后重新获取最新的版本数据
@@ -500,6 +520,9 @@ const handleDeleteVersion = async (partId) => {
     ElMessage.error('删除版本失败');
   }
 };
+
+
+
 
 
 
