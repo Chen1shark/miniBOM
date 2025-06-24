@@ -1,10 +1,5 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="编辑信息"
-    width="60%"
-    :before-close="handleClose"
-  >
+  <el-dialog v-model="dialogVisible" title="编辑信息" width="60%" :before-close="handleClose">
     <!-- 页签区 -->
     <el-tabs v-model="activeTab">
       <!-- 基本属性 -->
@@ -38,22 +33,15 @@
           </el-form-item>
           <el-form-item label="装配模式">
             <el-select v-model="formData.assemblyMode" placeholder="请选择模式">
-              <el-option label="可分离" value="Separable"/>
+              <el-option label="可分离" value="Separable" />
               <el-option label="不可分离" value="Inseparable" />
               <el-option label="零件" value="Part" />
             </el-select>
           </el-form-item>
           <el-form-item label="分类">
-            <el-tree-select
-              v-model="formData.categoryCode"
-              :data="categoryTree"
-              placeholder="请选择分类"
-              :props="{ label: 'name', children: 'children', value: 'id' }"
-              check-strictly
-              node-key="id"
-              default-expand-all
-              :loading="categoryTreeLoading"
-            />
+            <el-tree-select v-model="formData.categoryCode" :data="categoryTree" placeholder="请选择分类"
+              :props="{ label: 'name', children: 'children', value: 'id' }" check-strictly node-key="id"
+              default-expand-all :loading="categoryTreeLoading" />
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -66,43 +54,35 @@
           <el-button @click="showBomDialog">查看BOM清单</el-button>
           <el-button @click="showParentDialog">查看父项</el-button>
         </div>
-
-       <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
-  <!-- 编码列 -->
-  <el-table-column label="编码" width="260">
-    <template #default="{ row }">
-      <span>{{ row.partId }}</span>  <!-- 显示 partId 作为编码 -->
-    </template>
-  </el-table-column>
-
-  <!-- 名称列 -->
-  <el-table-column prop="name" label="名称" />
-
-  <!-- 数量列 -->
-  <el-table-column label="数量" width="120">
-    <template #default="{ row }">
-      <span>{{ row.quantity }}</span>  <!-- 显示数量 -->
-    </template>
-  </el-table-column>
-
-  <!-- 位号列 -->
-  <el-table-column label="位号" width="160">
-    <template #default="{ row }">
-      <span>{{ row.referenceDesignator }}</span>  <!-- 显示 referenceDesignator 作为位号 -->
-    </template>
-  </el-table-column>
-
-  <!-- 操作列 -->
-  <el-table-column label="操作" width="200" align="center">
-    <template #default="{ $index, row }">
-      <el-button type="primary" @click="showEditBomDialog(row)">修改</el-button>
-      <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
-    </template>
-  </el-table-column>
-</el-table>
-
-
-
+        <el-table :data="bomItems" border style="width: 100%" highlight-current-row>
+          <!-- 编码列 -->
+          <el-table-column label="编码" width="260">
+            <template #default="{ row }">
+              <span>{{ row.partId }}</span> <!-- 显示 partId 作为编码 -->
+            </template>
+          </el-table-column>
+          <!-- 名称列 -->
+          <el-table-column prop="name" label="名称" />
+          <!-- 数量列 -->
+          <el-table-column label="数量" width="120">
+            <template #default="{ row }">
+              <span>{{ row.quantity }}</span> <!-- 显示数量 -->
+            </template>
+          </el-table-column>
+          <!-- 位号列 -->
+          <el-table-column label="位号" width="160">
+            <template #default="{ row }">
+              <span>{{ row.referenceDesignator }}</span> <!-- 显示 referenceDesignator 作为位号 -->
+            </template>
+          </el-table-column>
+          <!-- 操作列 -->
+          <el-table-column label="操作" width="200" align="center">
+            <template #default="{ $index, row }">
+              <el-button type="primary" @click="showEditBomDialog(row)">修改</el-button>
+              <el-button type="danger" link @click="removeBomItem($index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-tab-pane>
 
       <!-- 版本管理 -->
@@ -129,62 +109,53 @@
       </span>
     </template>
 
-    <!-- 查看 BOM 清单弹窗（树形） -->
-    <el-dialog v-model="bomDialogVisible" title="BOM清单" width="60%">
-      <div class="tree-header">
-        <span class="col-code">编码</span>
-        <span class="col-name">名称</span>
-        <span class="col-qty">数量</span>
-        <span class="col-pos">位号</span>
-      </div>
-      <el-tree
-        :data="bomTree"
-        node-key="code"
-        default-expand-all
-        :props="{ children: 'children' }"
-        class="bom-tree"
-      >
-        <template #default="{ data }">
-          <span class="col-code">{{ data.code }}</span>
-          <span class="col-name">{{ data.name }}</span>
-          <span class="col-qty">{{ data.quantity }}</span>
-          <span class="col-pos">{{ data.position }}</span>
-        </template>
-      </el-tree>
-    </el-dialog>
+     <el-dialog v-model="bomDialogVisible" title="BOM清单" width="60%">
+    <el-tree
+      :data="bomTreeData"  
+      node-key="partId"    
+      default-expand-all   
+      :props="{ children: 'children' }" 
+      class="bom-tree"
+    >
+      <template #default="{ node }">
+        <span class="col-code">{{ node.data.partId }}</span>
+        <span class="col-name">{{ node.data.name }}</span>
+        <span class="col-qty">{{ node.data.quantity }}</span>
+        <span class="col-pos">{{ node.data.position }}</span>
+      </template>
+    </el-tree>
+  </el-dialog>
 
     <!-- 查看父项弹窗 -->
-    <el-dialog v-model="parentDialogVisible" title="父项" width="30%">
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="父级零件">{{ formData.parentPart }}</el-descriptions-item>
-      </el-descriptions>
+    <el-dialog v-model="parentDialogVisible" title="父项" width="60%">
+      <el-table :data="parentData" border style="width: 100%" highlight-current-row>
+        <el-table-column label="编码" prop="partId" width="260"></el-table-column>
+        <el-table-column label="版本号" prop="version" width="120"></el-table-column>
+        <el-table-column label="名称" prop="name"></el-table-column>
+        <!-- 显示 partType 作为装配方式 -->
+        <el-table-column label="装配方式" prop="partType" width="150"></el-table-column>
+      </el-table>
     </el-dialog>
 
     <!-- 修改 BOM 项弹窗 -->
-<el-dialog v-model="editBomDialogVisible" title="修改 BOM 项" width="30%">
-  <el-form :model="editBomData" label-width="120px">
-    <el-form-item label="数量">
-      <el-input-number v-model="editBomData.quantity" :min="1" />
-    </el-form-item>
-    <el-form-item label="位号">
-      <el-input v-model="editBomData.position" />
-    </el-form-item>
-  </el-form>
-  <template #footer>
-    <el-button @click="editBomDialogVisible = false">取消</el-button>
-    <el-button type="primary" @click="handleEditBomSave">保存</el-button>
-  </template>
-</el-dialog>
-
-
+    <el-dialog v-model="editBomDialogVisible" title="修改 BOM 项" width="30%">
+      <el-form :model="editBomData" label-width="120px">
+        <el-form-item label="数量">
+          <el-input-number v-model="editBomData.quantity" :min="1" />
+        </el-form-item>
+        <el-form-item label="位号">
+          <el-input v-model="editBomData.position" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editBomDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleEditBomSave">保存</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 新增子项组件 -->
-    <AddPartDialog
-      :visible="addPartDialogVisible"
-      :parentId="formData.masterId || props.rowData.partId"
-      @update:visible="v => (addPartDialogVisible = v)"
-      @add="addParts"
-    />
+    <AddPartDialog :visible="addPartDialogVisible" :parentId="formData.masterId || props.rowData.partId"
+      @update:visible="v => (addPartDialogVisible = v)" @add="addParts" />
   </el-dialog>
 </template>
 
@@ -193,7 +164,7 @@ import { ref, reactive, watch, computed, onMounted } from 'vue'
 import AddPartDialog from './AddPartDialog.vue'
 import { useUpdatePart } from '@/hooks/usePartApi'
 import { ElMessage } from 'element-plus'
-import { apiBomChecklist, apiBomUpdate, apiBomDelete,apiBomCreate,apiParentPartQuery } from '@/api/BOM'
+import { apiBomChecklist, apiBomUpdate, apiBomDelete, apiPartMasterQuery, apiParentPartQuery } from '@/api/BOM'
 import { useCategoryTreeInPart } from '@/hooks/useCategoryTreeInPart'
 
 // ---------- props & emit ----------
@@ -273,7 +244,7 @@ watch(
       formData.quantity = 1
       formData.notes = ''
 
-       // 获取 BOM 子项并更新到表格
+      // 获取 BOM 子项并更新到表格
       fetchBomItems()  // 获取并更新 bomItems 数据
 
       // 再用rowData回填
@@ -282,27 +253,17 @@ watch(
           formData[key] = props.rowData[key]
         }
       })
-      
+
       bomItems.value = props.rowData?.bomItems ? [...props.rowData.bomItems] : []
     }
   }
 )
-
-
 
 // ---------- 工具栏按钮 ----------
 const showAddPartDialog = () => {
   console.log('当前父部件ID:', props.rowData.partId)
   addPartDialogVisible.value = true
 }
-
-const showBomDialog = () => {
-  bomDialogVisible.value = true
-}
-const showParentDialog = () => {
-  parentDialogVisible.value = true
-}
-
 
 // ---------- API hook ----------
 const { execute: updatePart, loading } = useUpdatePart()
@@ -416,7 +377,7 @@ const removeBomItem = async (index) => {
 
     // 调用删除接口
     const response = await apiBomDelete({ ids: [bomLinkId] })
-    
+
     // 如果删除成功，移除 bomItems 中对应的项
     if (response.code === 1) {  // 根据接口返回的 code 判断是否成功
       bomItems.value.splice(index, 1)  // 从 bomItems 中移除对应项
@@ -430,6 +391,50 @@ const removeBomItem = async (index) => {
   }
 }
 
+const parentData = ref([]);  // 用来存储父项数据
+
+const showParentDialog = async () => {
+  try {
+    const partMasterId = props.rowData.partMasterId;  // 获取子部件的 partMasterId
+    const response = await apiPartMasterQuery({ partMasterId });  // 调用接口获取父项数据
+
+    // 假设返回的数据结构类似：
+    if (response.code === 1) {
+      parentData.value = response.data || [];  // 将父项数据赋值给 parentData
+      parentDialogVisible.value = true;  // 显示弹窗
+    } else {
+      ElMessage.error('获取父项信息失败');
+    }
+  } catch (error) {
+    console.error('获取父项信息失败:', error);
+    ElMessage.error('获取父项信息失败');
+  }
+};
+
+// 存储BOM清单的树形数据
+const bomTreeData = ref([])
+
+// 获取BOM清单数据
+const fetchBomChecklist = async () => {
+  try {
+    const response = await apiBomChecklist()  // 调用接口
+    if (response.code === 1) {
+      bomTreeData.value = response.data.bomTree || []  // 将 bomTree 数据存储到 bomTreeData
+    } else {
+      ElMessage.error('获取BOM清单失败')  // 错误提示
+    }
+  } catch (error) {
+    console.error('获取BOM清单失败:', error)
+    ElMessage.error('获取BOM清单失败')
+  }
+}
+
+// 显示查看BOM清单弹窗
+const showBomDialog = async () => {
+  await fetchBomChecklist()  // 调用接口获取数据
+  bomDialogVisible.value = true  // 打开弹窗
+}
+
 
 
 
@@ -441,40 +446,48 @@ const removeBomItem = async (index) => {
   justify-content: flex-end;
   gap: 10px;
 }
+
 .el-form {
   padding: 20px;
 }
+
 .el-tabs {
   margin-bottom: 20px;
 }
+
 .bom-toolbar {
   margin-bottom: 12px;
   display: flex;
   gap: 10px;
 }
+
 .tree-header,
 .bom-tree .el-tree-node__content {
   display: flex;
   align-items: center;
   line-height: 28px;
 }
+
 .col-code {
   width: 160px;
 }
+
 .col-name {
   flex: 1;
 }
+
 .col-qty {
   width: 80px;
   text-align: right;
 }
+
 .col-pos {
   width: 120px;
 }
+
 .tree-header {
   font-weight: 600;
   padding: 4px 0;
   border-bottom: 1px solid var(--el-border-color-light, #ebeef5);
 }
 </style>
-

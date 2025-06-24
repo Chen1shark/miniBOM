@@ -8,16 +8,8 @@
     </div>
 
     <!-- 选择列表（多选） -->
-    <el-table
-      :data="filteredParts"
-      border
-      style="width: 100%; margin-top: 12px;"
-      @selection-change="onSelectionChange"
-      :highlight-current-row="true"
-      :current-row="currentPart"
-      :row-key="row => row.partId"
-      type="selection"
-    >
+    <el-table :data="filteredParts" border style="width: 100%; margin-top: 12px;" @selection-change="onSelectionChange"
+      :highlight-current-row="true" :current-row="currentPart" :row-key="row => row.partId" type="selection">
       <el-table-column type="selection" width="50" label="#" />
       <el-table-column prop="partId" label="部件编号" width="180" />
       <el-table-column prop="name" label="名称" />
@@ -153,6 +145,7 @@ const submit = async () => {
   display: flex;
   align-items: center;
 }
+
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
