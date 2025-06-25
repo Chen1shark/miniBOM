@@ -525,6 +525,9 @@ const handleDeleteVersion = async (partId) => {
 
       // 删除后重新获取最新的版本数据
       fetchVersions(props.rowData.partMasterId);
+      
+      // 通知父组件刷新part列表
+      emit('save');
     } else {
       ElMessage.error('删除失败');
     }
