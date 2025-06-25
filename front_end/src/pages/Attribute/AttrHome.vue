@@ -18,12 +18,12 @@
         <el-button type="primary" @click="openCreate">{{ createButtonText }}</el-button>
       </div>
       <el-table v-if="queryType === 'attribute'" :data="attrList" style="width: 100%;" v-loading="loading">
-        <el-table-column prop="name" label="属性中文名" width="120" />
-        <el-table-column prop="nameEn" label="属性英文名" width="140" />
-        <el-table-column prop="description" label="属性中文描述" show-overflow-tooltip width="150" />
-        <el-table-column prop="descriptionEn" label="属性英文描述" show-overflow-tooltip width="150" />
-        <el-table-column prop="type" label="数据类型" width="100" />
-        <el-table-column prop="disableFlag" label="属性状态" width="80">
+        <el-table-column prop="name" label="属性中文名" min-width="120" />
+        <el-table-column prop="nameEn" label="属性英文名" min-width="140" />
+        <el-table-column prop="description" label="属性中文描述" show-overflow-tooltip min-width="150" />
+        <el-table-column prop="descriptionEn" label="属性英文描述" show-overflow-tooltip min-width="150" />
+        <el-table-column prop="type" label="数据类型" min-width="100" />
+        <el-table-column prop="disableFlag" label="属性状态" min-width="80">
           <template #default="scope">
             {{ scope.row.disableFlag ? '失效' : '有效' }}
           </template>
@@ -42,19 +42,19 @@
       </el-table>
 
       <el-table v-else-if="queryType === 'category'" :data="categoryList" style="width: 100%;" v-loading="loading">
-        <el-table-column prop="categoryCode" label="分类码" width="180">
+        <el-table-column prop="categoryCode" label="分类码" min-width="180">
            <template #default="scope">
             <el-link type="primary" @click="goToCategoryDetail(scope.row)">{{ scope.row.categoryCode }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="categoryNameZh" label="分类中文名称" width="200">
+        <el-table-column prop="categoryNameZh" label="分类中文名称" min-width="200">
           <template #default="scope">
             <el-link type="primary" @click="goToCategoryDetail(scope.row)">{{ scope.row.categoryNameZh }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="categoryNameEn" label="分类英文名称" width="200" />
-        <el-table-column prop="parentCategoryNameZh" label="分类中文描述" width="200" />
-        <el-table-column prop="parentCategoryNameEn" label="分类英文描述" width="200" />
+        <el-table-column prop="categoryNameEn" label="分类英文名称" min-width="200" />
+        <el-table-column prop="parentCategoryNameZh" label="分类中文描述" min-width="200" />
+        <el-table-column prop="parentCategoryNameEn" label="分类英文描述" min-width="200" />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
             <el-button size="small" type="primary" @click="openCategoryEdit(scope.row)">编辑</el-button>
@@ -503,10 +503,12 @@ const goToCategoryDetail = (row) => {
 
 <style scoped>
 .attr-home-container {
-  padding: 20px;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-family: Arial, sans-serif;
+  gap: 20px;
 }
 
 .attr-card {
@@ -514,13 +516,17 @@ const goToCategoryDetail = (row) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .attr-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .query-type-switch {
@@ -533,23 +539,32 @@ const goToCategoryDetail = (row) => {
   margin-right: 20px;
 }
 
-/* 添加表格容器样式 */
+/* 表格容器样式 */
 .el-table {
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
+  padding-bottom: 80px; /* 为固定的分页器留出空间 */
 }
 
 /* 确保表格内容可以滚动 */
 :deep(.el-table__body-wrapper) {
   overflow-y: auto;
-  max-height: calc(100vh - 280px); /* 调整这个值以适应您的布局 */
+  max-height: calc(100vh - 280px);
 }
 
-/* 固定分页器在底部 */
+/* 固定分页器在右侧底端 */
 .pagination-container {
-  margin-top: 20px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
   display: flex;
   justify-content: flex-end;
+  padding: 20px;
+  background-color: #fff;
+  border-top: 1px solid #ebeef5;
+  z-index: 10;
+  width: 100%;
+  box-sizing: border-box;
 }
 </style>
   

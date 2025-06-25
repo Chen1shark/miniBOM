@@ -99,10 +99,12 @@ onMounted(() => {
 
 <style scoped>
 .category-query-all-container {
-  padding: 20px;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-family: Arial, sans-serif;
+  gap: 20px;
 }
 
 .query-card {
@@ -116,7 +118,9 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0;
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
 }
 
 .title {

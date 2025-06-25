@@ -31,7 +31,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import SidebarMenu from '../components/SidebarMenu.vue'
-import Topbar from '../components/Topbar.vue'
+import Topbar from '../components/Topbar.vue' 
 import CategoryTreeView from '@/pages/Category/CategoryTreeView.vue'
 import { ElMessage } from 'element-plus'
 import { apiCateGet } from '@/api/CateGet'
