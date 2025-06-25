@@ -87,7 +87,7 @@ public class PartServiceImpl implements PartService {
         PartVersionVO partVersionVO = partVersionVOS.get(0);
 
         List<BOMLinkSimpleDto> bomLinkDetails = bomService.getBOMLinkDetails(partVersionVO.getPartId());
-        if(bomLinkDetails!=null){
+        if(!bomLinkDetails.isEmpty()){
             throw new PartCannotBeUpdateException(MessageConstant.PART_CANNOT_BE_UPDATE);
         }
 
