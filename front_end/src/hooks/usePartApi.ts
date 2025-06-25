@@ -78,9 +78,13 @@ function createApiHook<T, R>(apiFunction: (data: T) => Promise<R>) {
       const response = await apiFunction(data)
       success.value = true
       return response
-    } catch (err) {
+    } catch (err: any) {
       error.value = err
-      throw err
+      // 如果是后端返回的错误信息，优先使用后端的msg
+      if (err.response && err.response.msg) {
+        error.value = new Error(err.response.msg)
+      }
+      throw error.value
     } finally {
       loading.value = false
     }

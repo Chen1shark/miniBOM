@@ -232,7 +232,9 @@
         await refreshList()
       } catch (e) {
         console.error('删除失败:', e)
-        ElMessage.error('删除失败')
+        // 显示后端返回的具体错误信息
+        const errorMessage = e.message || '删除失败'
+        ElMessage.error(errorMessage)
       }
     })
   }

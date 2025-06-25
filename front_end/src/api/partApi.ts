@@ -32,11 +32,11 @@ interface createPart {
   partType: string,
   categoryId: string,
   clsAttrs: {
-    height: string,
-    Brand: string,
-    Weight: string,
-    Size: string,
-    Number: string
+    // height: string,
+    // Brand: string,
+    // Weight: string,
+    // Size: string,
+    // Number: string
   }
 
 }
@@ -49,11 +49,11 @@ interface updatePart {
   partType: string,
   categoryId: string,
   clsAttrs: {
-    height: string,
-    Brand: string,
-    Weight: string,
-    Size: string,
-    Number: string,
+    // height: string,
+    // Brand: string,
+    // Weight: string,
+    // Size: string,
+    // Number: string,
 
 
   }
@@ -90,22 +90,46 @@ export function apiGetAllpart() {
 
 //创建part
 export function apiCreateNewPart(data1: createPart) {
+  console.log('创建Part时发送的数据:', data1)
   return httpRequest({
     url: '/part/create',
     method: 'post',
     data: data1
+  }).then((response: any) => {
+    console.log('创建Part后端反馈:', response)
+    
+    // 检查后端返回的状态码
+    if (response && response.code === 0) {
+      // 操作失败，抛出错误并包含后端返回的错误信息
+      const error = new Error(response.msg || '创建失败')
+      ;(error as any).response = response
+      throw error
+    }
+    
+    return response
   })
-
 }
 
 
 //根据masterId更新
 export function apiUpdate(data2: updatePart) {
+  console.log('更新Part时发送的数据:', data2)
   return httpRequest({
     url: '/part/update',
     method: 'post',
     data: data2,
-
+  }).then((response: any) => {
+    console.log('更新Part后端反馈:', response)
+    
+    // 检查后端返回的状态码
+    if (response && response.code === 0) {
+      // 操作失败，抛出错误并包含后端返回的错误信息
+      const error = new Error(response.msg || '更新失败')
+      ;(error as any).response = response
+      throw error
+    }
+    
+    return response
   })
 }
 
@@ -126,6 +150,18 @@ export function apideletePart(masterId: BigInt) {
     headers: {
       'Content-Type': 'application/json'
     }
+  }).then((response: any) => {
+    console.log('删除Part后端反馈:', response)
+    
+    // 检查后端返回的状态码
+    if (response && response.code === 0) {
+      // 操作失败，抛出错误并包含后端返回的错误信息
+      const error = new Error(response.msg || '删除失败')
+      ;(error as any).response = response
+      throw error
+    }
+    
+    return response
   })
 }
 

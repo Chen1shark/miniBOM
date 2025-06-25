@@ -344,7 +344,9 @@ const handleSave = async () => {
     emit('save')
     handleClose()
   } catch (e) {
-    ElMessage.error('编辑失败')
+    // 显示后端返回的具体错误信息
+    const errorMessage = e.message || '编辑失败'
+    ElMessage.error(errorMessage)
   }
 }
 
